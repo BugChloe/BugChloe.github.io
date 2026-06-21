@@ -27,7 +27,7 @@
 <meta property="og:description" content="上一篇文章我们聊了：大模型本质上就是一个”猜词机器”，它不思考、不记忆、不干活。那些让你觉得它”智能”的体验，全是外面包的工程层在做事。 那篇文章也提到了 Agent 时代——当 AI 不再只是”说话”，它们也会”干活”。那么今天我们就来聊聊 AI Agent 到底是怎么做到可以干活的。  先看一个场景。 你对手机说：”帮我看一下这个月的销售数据，分析一下趋势，写一份报告发到飞书群。” 然后它真的">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-06-14T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-06-21T11:16:41.270Z">
+<meta property="article:modified_time" content="2026-06-21T13:53:09.882Z">
 <meta property="article:author" content="BugChloe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="Agent">
@@ -394,7 +394,7 @@
 <blockquote>
 <p>聊天 AI 是”你问一句，它答一句”。Agent 是”你给一个目标，它自己干完”。</p>
 </blockquote>
-<p>那 Agent 到底是怎么做到的？我们一层一层拆开看。</p>
+<p>那 Agent 到底是怎么做到的？接下来我们来分析下这个过程。</p>
 <hr>
 <h2 id="一、先看全景：一个-Agent-的内部长什么样"><a href="#一、先看全景：一个-Agent-的内部长什么样" class="headerlink" title="一、先看全景：一个 Agent 的内部长什么样"></a>一、先看全景：一个 Agent 的内部长什么样</h2><p>一个 Agent 接到任务到完成任务，中间经过 5 个环节。它不是走一遍就结束的直线，而是一个循环——干一步，看一眼结果，再决定下一步。</p>
 <pre><code class=" mermaid">%%&#123;init: &#123;&quot;fontSize&quot;: 9, &quot;width&quot;: 600&#125;&#125;%%
