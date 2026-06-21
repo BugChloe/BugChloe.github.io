@@ -1,0 +1,996 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/ladybug.png">
+  <link rel="icon" href="/img/ladybug.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BugChloe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="引言Java 从 JDK 17 到 JDK 21 的版本更新中，虚拟线程（Virtual Threads）和模式匹配（Pattern Matching）无疑是最具革命性的两个新特性。它们不仅改变了 Java 并发编程的范式，也使代码更加简洁、安全和高效。本文将深入分析这两个特性的设计原理、实际应用场景，并通过详细的代码案例展示它们的优势。 虚拟线程（Virtual Threads）核心概念虚拟线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 新特性深度解析：虚拟线程与模式匹配的实际应用">
+<meta property="og:url" content="https://bugchloe.github.io/2026/03/24/2026-03-24-java-virtual-threads-pattern-matching-practical/index.html">
+<meta property="og:site_name" content="BugChloe">
+<meta property="og:description" content="引言Java 从 JDK 17 到 JDK 21 的版本更新中，虚拟线程（Virtual Threads）和模式匹配（Pattern Matching）无疑是最具革命性的两个新特性。它们不仅改变了 Java 并发编程的范式，也使代码更加简洁、安全和高效。本文将深入分析这两个特性的设计原理、实际应用场景，并通过详细的代码案例展示它们的优势。 虚拟线程（Virtual Threads）核心概念虚拟线程">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-24T15:18:12.631Z">
+<meta property="article:modified_time" content="2026-03-24T15:18:12.667Z">
+<meta property="article:author" content="BugChloe">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="代码优化">
+<meta property="article:tag" content="并发编程">
+<meta property="article:tag" content="模式匹配">
+<meta property="article:tag" content="虚拟线程">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Java 新特性深度解析：虚拟线程与模式匹配的实际应用 - BugChloe</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bugchloe.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img src="/img/ladybug.png" srcset="/img/loading.gif" lazyload alt="Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;">
+      <strong>BugChloe</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/life/" target="_self">
+                <i class="iconfont icon-articles"></i>
+                <span>生活</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/english/" target="_self">
+                <i class="iconfont icon-chart"></i>
+                <span>学英语</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-category"></i>
+                <span>AI相关</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/model/" target="_self">
+                    <i class="iconfont icon-articles"></i>
+                    <span>模型</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/tools/" target="_self">
+                    <i class="iconfont icon-tags"></i>
+                    <span>工具</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/best-practices/" target="_self">
+                    <i class="iconfont icon-list"></i>
+                    <span>最佳实践</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-code"></i>
+                <span>编程</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/java/" target="_self">
+                    <i class="iconfont icon-author"></i>
+                    <span>Java</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/python/" target="_self">
+                    <i class="iconfont icon-copy"></i>
+                    <span>Python</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/frontend/" target="_self">
+                    <i class="iconfont icon-clock-fill"></i>
+                    <span>前端</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/miniprogram/" target="_self">
+                    <i class="iconfont icon-eye"></i>
+                    <span>小程序</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/postpage.webp') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Java 新特性深度解析：虚拟线程与模式匹配的实际应用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-03-24 23:18" pubdate>
+          2026年3月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Java 新特性深度解析：虚拟线程与模式匹配的实际应用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>Java 从 JDK 17 到 JDK 21 的版本更新中，虚拟线程（Virtual Threads）和模式匹配（Pattern Matching）无疑是最具革命性的两个新特性。它们不仅改变了 Java 并发编程的范式，也使代码更加简洁、安全和高效。本文将深入分析这两个特性的设计原理、实际应用场景，并通过详细的代码案例展示它们的优势。</p>
+<h2 id="虚拟线程（Virtual-Threads）"><a href="#虚拟线程（Virtual-Threads）" class="headerlink" title="虚拟线程（Virtual Threads）"></a>虚拟线程（Virtual Threads）</h2><h3 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h3><p>虚拟线程是 Java 19 中正式引入的轻量级线程实现，在 JDK 21 中成为 LTS 版本的标准特性。它的核心设计理念是：<strong>将线程的调度从操作系统内核转移到 JVM 用户态</strong>，从而实现更高效的线程管理。</p>
+<h3 id="技术原理"><a href="#技术原理" class="headerlink" title="技术原理"></a>技术原理</h3><ol>
+<li><strong>M:N 调度模型</strong>：虚拟线程采用 M:N 调度模型，M 个虚拟线程映射到 N 个平台线程（传统线程）</li>
+<li><strong>协作式调度</strong>：当虚拟线程遇到 I&#x2F;O 操作时，会主动让出 CPU，而不是阻塞平台线程</li>
+<li><strong>轻量级</strong>：虚拟线程的创建和销毁成本极低，内存占用仅为传统线程的约 1&#x2F;500</li>
+</ol>
+<h3 id="实际应用场景"><a href="#实际应用场景" class="headerlink" title="实际应用场景"></a>实际应用场景</h3><h4 id="场景一：Web-服务器处理并发请求"><a href="#场景一：Web-服务器处理并发请求" class="headerlink" title="场景一：Web 服务器处理并发请求"></a>场景一：Web 服务器处理并发请求</h4><p><strong>传统方案</strong>：使用线程池，线程数量受系统限制<br><strong>虚拟线程方案</strong>：为每个请求创建独立的虚拟线程</p>
+<p><strong>代码案例</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.io.IOException;<br><span class="hljs-keyword">import</span> java.net.URI;<br><span class="hljs-keyword">import</span> java.net.http.HttpClient;<br><span class="hljs-keyword">import</span> java.net.http.HttpRequest;<br><span class="hljs-keyword">import</span> java.net.http.HttpResponse;<br><span class="hljs-keyword">import</span> java.util.concurrent.ExecutorService;<br><span class="hljs-keyword">import</span> java.util.concurrent.Executors;<br><span class="hljs-keyword">import</span> java.util.stream.IntStream;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WebServerExample</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 使用虚拟线程执行器</span><br>        <span class="hljs-keyword">try</span> (<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executors.newVirtualThreadPerTaskExecutor()) &#123;<br>            <span class="hljs-comment">// 模拟处理1000个并发请求</span><br>            IntStream.range(<span class="hljs-number">0</span>, <span class="hljs-number">1000</span>).forEach(requestId -&gt; &#123;<br>                executor.submit(() -&gt; &#123;<br>                    <span class="hljs-keyword">try</span> &#123;<br>                        <span class="hljs-comment">// 模拟处理HTTP请求</span><br>                        handleHttpRequest(requestId);<br>                    &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                        e.printStackTrace();<br>                    &#125;<br>                &#125;);<br>            &#125;);<br>        &#125; <span class="hljs-comment">// 自动关闭执行器</span><br>        <br>        System.out.println(<span class="hljs-string">&quot;All requests processed&quot;</span>);<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleHttpRequest</span><span class="hljs-params">(<span class="hljs-type">int</span> requestId)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException &#123;<br>        <span class="hljs-comment">// 模拟HTTP客户端请求</span><br>        <span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newHttpClient();<br>        <span class="hljs-type">HttpRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> HttpRequest.newBuilder()<br>            .uri(URI.create(<span class="hljs-string">&quot;https://api.example.com/data&quot;</span>))<br>            .build();<br>        <br>        <span class="hljs-comment">// 发送请求并等待响应（I/O操作）</span><br>        HttpResponse&lt;String&gt; response = client.send(<br>            request, HttpResponse.BodyHandlers.ofString()<br>        );<br>        <br>        <span class="hljs-comment">// 处理响应</span><br>        System.out.println(STR.<span class="hljs-string">&quot;Request requestId&#125; processed, status: response.statusCode()&#125;&quot;</span>);<br>        <br>        <span class="hljs-comment">// 模拟业务逻辑处理</span><br>        Thread.sleep(<span class="hljs-number">100</span>); <span class="hljs-comment">// 模拟CPU处理时间</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>性能对比</strong>：</p>
+<ul>
+<li>传统线程池：处理1000个请求需要约100个线程，内存占用约100MB</li>
+<li>虚拟线程：处理1000个请求需要1000个虚拟线程，内存占用约2MB</li>
+<li>响应时间：虚拟线程方案响应时间更均匀，无线程竞争</li>
+</ul>
+<h4 id="场景二：批量数据处理"><a href="#场景二：批量数据处理" class="headerlink" title="场景二：批量数据处理"></a>场景二：批量数据处理</h4><p><strong>传统方案</strong>：使用固定大小的线程池<br><strong>虚拟线程方案</strong>：为每个数据项创建虚拟线程</p>
+<p><strong>代码案例</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.util.List;<br><span class="hljs-keyword">import</span> java.util.concurrent.ExecutorService;<br><span class="hljs-keyword">import</span> java.util.concurrent.Executors;<br><span class="hljs-keyword">import</span> java.util.concurrent.CompletableFuture;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">DataProcessingExample</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 模拟大量数据</span><br>        List&lt;String&gt; dataItems = List.of(<br>            <span class="hljs-string">&quot;item1&quot;</span>, <span class="hljs-string">&quot;item2&quot;</span>, <span class="hljs-string">&quot;item3&quot;</span>, <span class="hljs-string">&quot;item4&quot;</span>, <span class="hljs-string">&quot;item5&quot;</span>,<br>            <span class="hljs-string">&quot;item6&quot;</span>, <span class="hljs-string">&quot;item7&quot;</span>, <span class="hljs-string">&quot;item8&quot;</span>, <span class="hljs-string">&quot;item9&quot;</span>, <span class="hljs-string">&quot;item10&quot;</span><br>            <span class="hljs-comment">// 实际应用中可能有数千个数据项</span><br>        );<br>        <br>        <span class="hljs-comment">// 使用虚拟线程执行器</span><br>        <span class="hljs-keyword">try</span> (<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executors.newVirtualThreadPerTaskExecutor()) &#123;<br>            <span class="hljs-comment">// 为每个数据项创建任务</span><br>            <span class="hljs-type">var</span> <span class="hljs-variable">futures</span> <span class="hljs-operator">=</span> dataItems.stream()<br>                .map(item -&gt; CompletableFuture.supplyAsync(() -&gt; &#123;<br>                    <span class="hljs-keyword">try</span> &#123;<br>                        <span class="hljs-keyword">return</span> processData(item);<br>                    &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(e);<br>                    &#125;<br>                &#125;, executor))<br>                .toList();<br>            <br>            <span class="hljs-comment">// 等待所有任务完成</span><br>            futures.forEach(future -&gt; &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    System.out.println(<span class="hljs-string">&quot;Processed: &quot;</span> + future.get());<br>                &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>            &#125;);<br>        &#125;<br>        <br>        System.out.println(<span class="hljs-string">&quot;All data processed&quot;</span>);<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">processData</span><span class="hljs-params">(String item)</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        <span class="hljs-comment">// 模拟I/O操作（如数据库查询、文件读写等）</span><br>        Thread.sleep(<span class="hljs-number">500</span>);<br>        <br>        <span class="hljs-comment">// 模拟业务逻辑</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;processed-&quot;</span> + item;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势分析</strong>：</p>
+<ul>
+<li><strong>更高的吞吐量</strong>：虚拟线程可以充分利用系统资源，处理更多并发任务</li>
+<li><strong>更简单的代码</strong>：无需手动管理线程池大小</li>
+<li><strong>更好的可调试性</strong>：每个任务都有独立的线程栈，便于调试</li>
+</ul>
+<h4 id="场景三：微服务间通信"><a href="#场景三：微服务间通信" class="headerlink" title="场景三：微服务间通信"></a>场景三：微服务间通信</h4><p><strong>传统方案</strong>：使用线程池处理异步调用<br><strong>虚拟线程方案</strong>：使用虚拟线程实现同步代码风格的异步调用</p>
+<p><strong>代码案例</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.io.IOException;<br><span class="hljs-keyword">import</span> java.net.URI;<br><span class="hljs-keyword">import</span> java.net.http.HttpClient;<br><span class="hljs-keyword">import</span> java.net.http.HttpRequest;<br><span class="hljs-keyword">import</span> java.net.http.HttpResponse;<br><span class="hljs-keyword">import</span> java.util.concurrent.ExecutorService;<br><span class="hljs-keyword">import</span> java.util.concurrent.Executors;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MicroserviceCommunicationExample</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newHttpClient();<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-keyword">try</span> (<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executors.newVirtualThreadPerTaskExecutor()) &#123;<br>            executor.submit(() -&gt; &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">// 同步代码风格，实际是异步执行</span><br>                    <span class="hljs-type">String</span> <span class="hljs-variable">userData</span> <span class="hljs-operator">=</span> getUserData(<span class="hljs-number">123</span>);<br>                    <span class="hljs-type">String</span> <span class="hljs-variable">orderData</span> <span class="hljs-operator">=</span> getOrderData(<span class="hljs-number">123</span>);<br>                    <span class="hljs-type">String</span> <span class="hljs-variable">productData</span> <span class="hljs-operator">=</span> getProductData(<span class="hljs-number">456</span>);<br>                    <br>                    <span class="hljs-comment">// 处理组合数据</span><br>                    processCombinedData(userData, orderData, productData);<br>                &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>            &#125;);<br>        &#125;<br>        <br>        System.out.println(<span class="hljs-string">&quot;Microservice communication started&quot;</span>);<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">getUserData</span><span class="hljs-params">(<span class="hljs-type">int</span> userId)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException &#123;<br>        <span class="hljs-type">HttpRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> HttpRequest.newBuilder()<br>            .uri(URI.create(STR.<span class="hljs-string">&quot;https://user-service/api/users/&#125;userId&quot;</span>))<br>            .build();<br>        <br>        HttpResponse&lt;String&gt; response = client.send(<br>            request, HttpResponse.BodyHandlers.ofString()<br>        );<br>        <span class="hljs-keyword">return</span> response.body();<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">getOrderData</span><span class="hljs-params">(<span class="hljs-type">int</span> userId)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException &#123;<br>        <span class="hljs-type">HttpRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> HttpRequest.newBuilder()<br>            .uri(URI.create(STR.<span class="hljs-string">&quot;https://order-service/api/orders?userId=&#125;userId&quot;</span>))<br>            .build();<br>        <br>        HttpResponse&lt;String&gt; response = client.send(<br>            request, HttpResponse.BodyHandlers.ofString()<br>        );<br>        <span class="hljs-keyword">return</span> response.body();<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">getProductData</span><span class="hljs-params">(<span class="hljs-type">int</span> productId)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException &#123;<br>        <span class="hljs-type">HttpRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> HttpRequest.newBuilder()<br>            .uri(URI.create(STR.<span class="hljs-string">&quot;https://product-service/api/products/&#125;productId&quot;</span>))<br>            .build();<br>        <br>        HttpResponse&lt;String&gt; response = client.send(<br>            request, HttpResponse.BodyHandlers.ofString()<br>        );<br>        <span class="hljs-keyword">return</span> response.body();<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processCombinedData</span><span class="hljs-params">(String userData, String orderData, String productData)</span> &#123;<br>        <span class="hljs-comment">// 处理组合数据</span><br>        System.out.println(<span class="hljs-string">&quot;Processing combined data...&quot;</span>);<br>        System.out.println(<span class="hljs-string">&quot;User data: &quot;</span> + userData.substring(<span class="hljs-number">0</span>, <span class="hljs-number">50</span>) + <span class="hljs-string">&quot;...&quot;</span>);<br>        System.out.println(<span class="hljs-string">&quot;Order data: &quot;</span> + orderData.substring(<span class="hljs-number">0</span>, <span class="hljs-number">50</span>) + <span class="hljs-string">&quot;...&quot;</span>);<br>        System.out.println(<span class="hljs-string">&quot;Product data: &quot;</span> + productData.substring(<span class="hljs-number">0</span>, <span class="hljs-number">50</span>) + <span class="hljs-string">&quot;...&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>代码分析</strong>：</p>
+<ul>
+<li>虽然代码看起来是同步的，但实际上每个 HTTP 请求都会让出线程，不会阻塞</li>
+<li>避免了回调地狱和复杂的 CompletableFuture 链</li>
+<li>代码更易读、易维护</li>
+</ul>
+<h3 id="虚拟线程最佳实践"><a href="#虚拟线程最佳实践" class="headerlink" title="虚拟线程最佳实践"></a>虚拟线程最佳实践</h3><ol>
+<li><strong>优先用于 I&#x2F;O 密集型任务</strong>：网络请求、文件操作、数据库查询等</li>
+<li><strong>避免 CPU 密集型任务</strong>：CPU 密集型任务仍应使用传统线程</li>
+<li><strong>合理使用执行器</strong>：使用 <code>Executors.newVirtualThreadPerTaskExecutor()</code></li>
+<li><strong>注意资源管理</strong>：使用 try-with-resources 确保执行器正确关闭</li>
+<li><strong>避免线程局部变量</strong>：优先使用作用域值（Scoped Values）</li>
+<li><strong>监控和调试</strong>：使用 JDK 提供的工具监控虚拟线程状态</li>
+</ol>
+<h2 id="模式匹配（Pattern-Matching）"><a href="#模式匹配（Pattern-Matching）" class="headerlink" title="模式匹配（Pattern Matching）"></a>模式匹配（Pattern Matching）</h2><h3 id="核心概念-1"><a href="#核心概念-1" class="headerlink" title="核心概念"></a>核心概念</h3><p>模式匹配是一种允许在程序中根据数据的结构和类型进行匹配的特性，从 JDK 14 开始预览，在 JDK 21 中成为标准特性。</p>
+<h3 id="演进历程"><a href="#演进历程" class="headerlink" title="演进历程"></a>演进历程</h3><ol>
+<li><strong>JDK 14</strong>：Pattern Matching for instanceof</li>
+<li><strong>JDK 16</strong>：Pattern Matching for switch（预览）</li>
+<li><strong>JDK 17</strong>：Pattern Matching for switch（第二次预览）</li>
+<li><strong>JDK 18</strong>：Pattern Matching for switch（第三次预览）</li>
+<li><strong>JDK 21</strong>：Pattern Matching for switch（正式）</li>
+</ol>
+<h3 id="实际应用场景-1"><a href="#实际应用场景-1" class="headerlink" title="实际应用场景"></a>实际应用场景</h3><h4 id="场景一：类型检查和转换"><a href="#场景一：类型检查和转换" class="headerlink" title="场景一：类型检查和转换"></a>场景一：类型检查和转换</h4><p><strong>传统方案</strong>：使用 instanceof 检查后进行类型转换<br><strong>模式匹配方案</strong>：在 instanceof 检查的同时进行类型转换</p>
+<p><strong>代码案例</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TypeCheckingExample</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processObject</span><span class="hljs-params">(Object obj)</span> &#123;<br>        <span class="hljs-comment">// 传统方式</span><br>        <span class="hljs-keyword">if</span> (obj <span class="hljs-keyword">instanceof</span> String) &#123;<br>            <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> (String) obj;<br>            System.out.println(<span class="hljs-string">&quot;String length: &quot;</span> + str.length());<br>            System.out.println(<span class="hljs-string">&quot;Uppercase: &quot;</span> + str.toUpperCase());<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (obj <span class="hljs-keyword">instanceof</span> Integer) &#123;<br>            <span class="hljs-type">Integer</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> (Integer) obj;<br>            System.out.println(<span class="hljs-string">&quot;Integer value: &quot;</span> + i);<br>            System.out.println(<span class="hljs-string">&quot;Square: &quot;</span> + (i * i));<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (obj <span class="hljs-keyword">instanceof</span> Double) &#123;<br>            <span class="hljs-type">Double</span> <span class="hljs-variable">d</span> <span class="hljs-operator">=</span> (Double) obj;<br>            System.out.println(<span class="hljs-string">&quot;Double value: &quot;</span> + d);<br>            System.out.println(<span class="hljs-string">&quot;Rounded: &quot;</span> + Math.round(d));<br>        &#125;<br>        <br>        <span class="hljs-comment">// 模式匹配方式</span><br>        <span class="hljs-keyword">if</span> (obj <span class="hljs-keyword">instanceof</span> String str) &#123;<br>            System.out.println(<span class="hljs-string">&quot;String length: &quot;</span> + str.length());<br>            System.out.println(<span class="hljs-string">&quot;Uppercase: &quot;</span> + str.toUpperCase());<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (obj <span class="hljs-keyword">instanceof</span> Integer i) &#123;<br>            System.out.println(<span class="hljs-string">&quot;Integer value: &quot;</span> + i);<br>            System.out.println(<span class="hljs-string">&quot;Square: &quot;</span> + (i * i));<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (obj <span class="hljs-keyword">instanceof</span> Double d) &#123;<br>            System.out.println(<span class="hljs-string">&quot;Double value: &quot;</span> + d);<br>            System.out.println(<span class="hljs-string">&quot;Rounded: &quot;</span> + Math.round(d));<br>        &#125;<br>    &#125;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        processObject(<span class="hljs-string">&quot;Hello World&quot;</span>);<br>        processObject(<span class="hljs-number">42</span>);<br>        processObject(<span class="hljs-number">3.14</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势分析</strong>：</p>
+<ul>
+<li>减少代码行数：避免了重复的类型转换</li>
+<li>提高代码可读性：逻辑更清晰</li>
+<li>减少错误：避免了类型转换错误</li>
+</ul>
+<h4 id="场景二：switch-语句增强"><a href="#场景二：switch-语句增强" class="headerlink" title="场景二：switch 语句增强"></a>场景二：switch 语句增强</h4><p><strong>传统方案</strong>：使用多个 if-else 或复杂的 switch 语句<br><strong>模式匹配方案</strong>：使用模式匹配的 switch 语句</p>
+<p><strong>代码案例</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 定义记录类型</span><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Point</span><span class="hljs-params">(<span class="hljs-type">int</span> x, <span class="hljs-type">int</span> y)</span> &#123;&#125;<br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Circle</span><span class="hljs-params">(Point center, <span class="hljs-type">double</span> radius)</span> &#123;&#125;<br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Rectangle</span><span class="hljs-params">(Point topLeft, Point bottomRight)</span> &#123;&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SwitchPatternMatchingExample</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">double</span> <span class="hljs-title function_">calculateArea</span><span class="hljs-params">(Object shape)</span> &#123;<br>        <span class="hljs-comment">// 传统方式</span><br>        <span class="hljs-keyword">if</span> (shape <span class="hljs-keyword">instanceof</span> Circle) &#123;<br>            <span class="hljs-type">Circle</span> <span class="hljs-variable">circle</span> <span class="hljs-operator">=</span> (Circle) shape;<br>            <span class="hljs-keyword">return</span> Math.PI * circle.radius() * circle.radius();<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (shape <span class="hljs-keyword">instanceof</span> Rectangle) &#123;<br>            <span class="hljs-type">Rectangle</span> <span class="hljs-variable">rect</span> <span class="hljs-operator">=</span> (Rectangle) shape;<br>            <span class="hljs-type">int</span> <span class="hljs-variable">width</span> <span class="hljs-operator">=</span> Math.abs(rect.bottomRight().x() - rect.topLeft().x());<br>            <span class="hljs-type">int</span> <span class="hljs-variable">height</span> <span class="hljs-operator">=</span> Math.abs(rect.bottomRight().y() - rect.topLeft().y());<br>            <span class="hljs-keyword">return</span> width * height;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">&quot;Unknown shape type&quot;</span>);<br>        &#125;<br>        <br>        <span class="hljs-comment">// 模式匹配方式</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">switch</span> (shape) &#123;<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Circle</span><span class="hljs-params">(Point center, <span class="hljs-type">double</span> radius)</span> -&gt; <br>                Math.PI * radius * radius;<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Rectangle</span><span class="hljs-params">(Point(<span class="hljs-type">int</span> x1, <span class="hljs-type">int</span> y1)</span>, Point(<span class="hljs-type">int</span> x2, <span class="hljs-type">int</span> y2)) -&gt; <br>                Math.abs(x2 - x1) * Math.abs(y2 - y1);<br>            <span class="hljs-keyword">default</span> -&gt; <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">&quot;Unknown shape type&quot;</span>);<br>        &#125;;<br>    &#125;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-type">Circle</span> <span class="hljs-variable">circle</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Circle</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Point</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>), <span class="hljs-number">5</span>);<br>        <span class="hljs-type">Rectangle</span> <span class="hljs-variable">rect</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Rectangle</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Point</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Point</span>(<span class="hljs-number">10</span>, <span class="hljs-number">5</span>));<br>        <br>        System.out.println(<span class="hljs-string">&quot;Circle area: &quot;</span> + calculateArea(circle));<br>        System.out.println(<span class="hljs-string">&quot;Rectangle area: &quot;</span> + calculateArea(rect));<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>代码分析</strong>：</p>
+<ul>
+<li>模式匹配的 switch 语句更简洁、更易读</li>
+<li>支持解构记录类型，直接提取字段值</li>
+<li>支持类型模式和记录模式的组合</li>
+</ul>
+<h4 id="场景三：密封类与模式匹配"><a href="#场景三：密封类与模式匹配" class="headerlink" title="场景三：密封类与模式匹配"></a>场景三：密封类与模式匹配</h4><p><strong>传统方案</strong>：使用 instanceof 检查所有子类<br><strong>模式匹配方案</strong>：使用密封类和模式匹配的 switch 语句</p>
+<p><strong>代码案例</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 密封类定义</span><br><span class="hljs-keyword">sealed</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Expression</span> <span class="hljs-keyword">permits</span> Constant, Add, Subtract, Multiply, Divide &#123;<br>    <span class="hljs-type">double</span> <span class="hljs-title function_">evaluate</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Constant</span><span class="hljs-params">(<span class="hljs-type">double</span> value)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Expression</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">evaluate</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> value;<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Add</span><span class="hljs-params">(Expression left, Expression right)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Expression</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">evaluate</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> left.evaluate() + right.evaluate();<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Subtract</span><span class="hljs-params">(Expression left, Expression right)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Expression</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">evaluate</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> left.evaluate() - right.evaluate();<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Multiply</span><span class="hljs-params">(Expression left, Expression right)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Expression</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">evaluate</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> left.evaluate() * right.evaluate();<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">Divide</span><span class="hljs-params">(Expression left, Expression right)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Expression</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">evaluate</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">if</span> (right.evaluate() == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArithmeticException</span>(<span class="hljs-string">&quot;Division by zero&quot;</span>);<br>        &#125;<br>        <span class="hljs-keyword">return</span> left.evaluate() / right.evaluate();<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SealedClassesPatternMatchingExample</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">formatExpression</span><span class="hljs-params">(Expression expr)</span> &#123;<br>        <span class="hljs-comment">// 传统方式</span><br>        <span class="hljs-keyword">if</span> (expr <span class="hljs-keyword">instanceof</span> Constant) &#123;<br>            <span class="hljs-type">Constant</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> (Constant) expr;<br>            <span class="hljs-keyword">return</span> String.valueOf(c.value());<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (expr <span class="hljs-keyword">instanceof</span> Add) &#123;<br>            <span class="hljs-type">Add</span> <span class="hljs-variable">a</span> <span class="hljs-operator">=</span> (Add) expr;<br>            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;(&quot;</span> + formatExpression(a.left()) + <span class="hljs-string">&quot; + &quot;</span> + formatExpression(a.right()) + <span class="hljs-string">&quot;)&quot;</span>;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (expr <span class="hljs-keyword">instanceof</span> Subtract) &#123;<br>            <span class="hljs-type">Subtract</span> <span class="hljs-variable">s</span> <span class="hljs-operator">=</span> (Subtract) expr;<br>            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;(&quot;</span> + formatExpression(s.left()) + <span class="hljs-string">&quot; - &quot;</span> + formatExpression(s.right()) + <span class="hljs-string">&quot;)&quot;</span>;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (expr <span class="hljs-keyword">instanceof</span> Multiply) &#123;<br>            <span class="hljs-type">Multiply</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> (Multiply) expr;<br>            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;(&quot;</span> + formatExpression(m.left()) + <span class="hljs-string">&quot; * &quot;</span> + formatExpression(m.right()) + <span class="hljs-string">&quot;)&quot;</span>;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (expr <span class="hljs-keyword">instanceof</span> Divide) &#123;<br>            <span class="hljs-type">Divide</span> <span class="hljs-variable">d</span> <span class="hljs-operator">=</span> (Divide) expr;<br>            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;(&quot;</span> + formatExpression(d.left()) + <span class="hljs-string">&quot; / &quot;</span> + formatExpression(d.right()) + <span class="hljs-string">&quot;)&quot;</span>;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">&quot;Unknown expression type&quot;</span>);<br>        &#125;<br>        <br>        <span class="hljs-comment">// 模式匹配方式</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">switch</span> (expr) &#123;<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Constant</span><span class="hljs-params">(<span class="hljs-type">double</span> value)</span> -&gt; String.valueOf(value);<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Add</span><span class="hljs-params">(Expression left, Expression right)</span> -&gt; <br>                <span class="hljs-string">&quot;(&quot;</span> + formatExpression(left) + <span class="hljs-string">&quot; + &quot;</span> + formatExpression(right) + <span class="hljs-string">&quot;)&quot;</span>;<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Subtract</span><span class="hljs-params">(Expression left, Expression right)</span> -&gt; <br>                <span class="hljs-string">&quot;(&quot;</span> + formatExpression(left) + <span class="hljs-string">&quot; - &quot;</span> + formatExpression(right) + <span class="hljs-string">&quot;)&quot;</span>;<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Multiply</span><span class="hljs-params">(Expression left, Expression right)</span> -&gt; <br>                <span class="hljs-string">&quot;(&quot;</span> + formatExpression(left) + <span class="hljs-string">&quot; * &quot;</span> + formatExpression(right) + <span class="hljs-string">&quot;)&quot;</span>;<br>            <span class="hljs-keyword">case</span> <span class="hljs-title function_">Divide</span><span class="hljs-params">(Expression left, Expression right)</span> -&gt; <br>                <span class="hljs-string">&quot;(&quot;</span> + formatExpression(left) + <span class="hljs-string">&quot; / &quot;</span> + formatExpression(right) + <span class="hljs-string">&quot;)&quot;</span>;<br>        &#125;;<br>    &#125;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 创建表达式：(2 + 3) * 4</span><br>        <span class="hljs-type">Expression</span> <span class="hljs-variable">expr</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Multiply</span>(<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Add</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Constant</span>(<span class="hljs-number">2</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Constant</span>(<span class="hljs-number">3</span>)),<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Constant</span>(<span class="hljs-number">4</span>)<br>        );<br>        <br>        System.out.println(<span class="hljs-string">&quot;Expression: &quot;</span> + formatExpression(expr));<br>        System.out.println(<span class="hljs-string">&quot;Result: &quot;</span> + expr.evaluate());<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势分析</strong>：</p>
+<ul>
+<li>密封类确保了所有可能的类型都被覆盖</li>
+<li>模式匹配的 switch 语句提供了完整的类型覆盖检查</li>
+<li>代码更简洁、更安全</li>
+</ul>
+<h3 id="模式匹配最佳实践"><a href="#模式匹配最佳实践" class="headerlink" title="模式匹配最佳实践"></a>模式匹配最佳实践</h3><ol>
+<li><strong>简化类型检查</strong>：使用 Pattern Matching for instanceof 替代传统的 instanceof 检查和类型转换</li>
+<li><strong>增强 switch 语句</strong>：使用 Pattern Matching for switch 处理复杂的类型匹配</li>
+<li><strong>结合密封类</strong>：使用密封类和模式匹配实现完整的类型覆盖</li>
+<li><strong>解构记录类型</strong>：使用记录模式从记录类型中提取数据</li>
+<li><strong>使用卫语句</strong>：在模式匹配中使用卫语句（when 子句）处理特殊情况</li>
+</ol>
+<h2 id="综合应用案例"><a href="#综合应用案例" class="headerlink" title="综合应用案例"></a>综合应用案例</h2><p>下面是一个结合虚拟线程和模式匹配的综合应用案例，展示它们如何协同工作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.util.concurrent.ExecutorService;<br><span class="hljs-keyword">import</span> java.util.concurrent.Executors;<br><span class="hljs-keyword">import</span> java.util.concurrent.CompletableFuture;<br><span class="hljs-keyword">import</span> java.util.List;<br><span class="hljs-keyword">import</span> java.util.stream.Collectors;<br><br><span class="hljs-comment">// 记录类型</span><br>trecord <span class="hljs-title function_">User</span><span class="hljs-params">(String id, String name, String email)</span> &#123;&#125;<br>trecord <span class="hljs-title function_">Order</span><span class="hljs-params">(String id, String userId, <span class="hljs-type">double</span> amount)</span> &#123;&#125;<br>trecord <span class="hljs-title function_">Product</span><span class="hljs-params">(String id, String name, <span class="hljs-type">double</span> price)</span> &#123;&#125;<br><br><span class="hljs-comment">// 密封类</span><br><span class="hljs-keyword">sealed</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">ApiResponse</span> <span class="hljs-keyword">permits</span> SuccessResponse, ErrorResponse &#123;<br>    String <span class="hljs-title function_">getMessage</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">record</span> <span class="hljs-title class_">SuccessResponse</span><span class="hljs-params">(String message, Object data)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">ApiResponse</span> &#123;&#125;<br><span class="hljs-keyword">record</span> <span class="hljs-title class_">ErrorResponse</span><span class="hljs-params">(String message, String errorCode)</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">ApiResponse</span> &#123;&#125;<br><br><span class="hljs-keyword">public</span> class综合应用案例 &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 使用虚拟线程执行器</span><br>        <span class="hljs-keyword">try</span> (<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executors.newVirtualThreadPerTaskExecutor()) &#123;<br>            <span class="hljs-comment">// 处理多个用户请求</span><br>            List&lt;String&gt; userIds = List.of(<span class="hljs-string">&quot;1&quot;</span>, <span class="hljs-string">&quot;2&quot;</span>, <span class="hljs-string">&quot;3&quot;</span>, <span class="hljs-string">&quot;4&quot;</span>, <span class="hljs-string">&quot;5&quot;</span>);<br>            <br>            <span class="hljs-type">var</span> <span class="hljs-variable">futures</span> <span class="hljs-operator">=</span> userIds.stream()<br>                .map(userId -&gt; CompletableFuture.supplyAsync(() -&gt; &#123;<br>                    <span class="hljs-keyword">try</span> &#123;<br>                        <span class="hljs-keyword">return</span> processUserRequest(userId);<br>                    &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(e);<br>                    &#125;<br>                &#125;, executor))<br>                .toList();<br>            <br>            <span class="hljs-comment">// 收集结果</span><br>            List&lt;ApiResponse&gt; responses = futures.stream()<br>                .map(CompletableFuture::join)<br>                .collect(Collectors.toList());<br>            <br>            <span class="hljs-comment">// 使用模式匹配处理响应</span><br>            responses.forEach(response -&gt; &#123;<br>                <span class="hljs-keyword">switch</span> (response) &#123;<br>                    <span class="hljs-keyword">case</span> <span class="hljs-title function_">SuccessResponse</span><span class="hljs-params">(String message, Object data)</span> -&gt; &#123;<br>                        System.out.println(<span class="hljs-string">&quot;Success: &quot;</span> + message);<br>                        System.out.println(<span class="hljs-string">&quot;Data: &quot;</span> + data);<br>                    &#125;<br>                    <span class="hljs-keyword">case</span> <span class="hljs-title function_">ErrorResponse</span><span class="hljs-params">(String message, String errorCode)</span> -&gt; &#123;<br>                        System.out.println(<span class="hljs-string">&quot;Error: &quot;</span> + message + <span class="hljs-string">&quot; (Code: &quot;</span> + errorCode + <span class="hljs-string">&quot;)&quot;</span>);<br>                    &#125;<br>                &#125;<br>            &#125;);<br>        &#125;<br>        <br>        System.out.println(<span class="hljs-string">&quot;All requests processed&quot;</span>);<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ApiResponse <span class="hljs-title function_">processUserRequest</span><span class="hljs-params">(String userId)</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        <span class="hljs-comment">// 模拟用户服务调用</span><br>        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> getUserFromService(userId);<br>        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ErrorResponse</span>(<span class="hljs-string">&quot;User not found&quot;</span>, <span class="hljs-string">&quot;404&quot;</span>);<br>        &#125;<br>        <br>        <span class="hljs-comment">// 模拟订单服务调用</span><br>        List&lt;Order&gt; orders = getOrdersFromService(userId);<br>        <br>        <span class="hljs-comment">// 模拟产品服务调用</span><br>        List&lt;Product&gt; products = getProductsFromService(orders);<br>        <br>        <span class="hljs-comment">// 构建响应数据</span><br>        <span class="hljs-type">var</span> <span class="hljs-variable">responseData</span> <span class="hljs-operator">=</span> STR.<span class="hljs-string">&quot;User: user.name()&#125;, Orders: orders.size()&#125;, Products: products.size()&#125;&quot;</span>;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SuccessResponse</span>(<span class="hljs-string">&quot;User data processed successfully&quot;</span>, responseData);<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> User <span class="hljs-title function_">getUserFromService</span><span class="hljs-params">(String userId)</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        <span class="hljs-comment">// 模拟网络延迟</span><br>        Thread.sleep(<span class="hljs-number">100</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">User</span>(userId, <span class="hljs-string">&quot;User &quot;</span> + userId, <span class="hljs-string">&quot;user&quot;</span> + userId + <span class="hljs-string">&quot;@example.com&quot;</span>);<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> List&lt;Order&gt; <span class="hljs-title function_">getOrdersFromService</span><span class="hljs-params">(String userId)</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        <span class="hljs-comment">// 模拟网络延迟</span><br>        Thread.sleep(<span class="hljs-number">150</span>);<br>        <span class="hljs-keyword">return</span> List.of(<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Order</span>(<span class="hljs-string">&quot;order1&quot;</span>, userId, <span class="hljs-number">100.0</span>),<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Order</span>(<span class="hljs-string">&quot;order2&quot;</span>, userId, <span class="hljs-number">200.0</span>)<br>        );<br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> List&lt;Product&gt; <span class="hljs-title function_">getProductsFromService</span><span class="hljs-params">(List&lt;Order&gt; orders)</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        <span class="hljs-comment">// 模拟网络延迟</span><br>        Thread.sleep(<span class="hljs-number">200</span>);<br>        <span class="hljs-keyword">return</span> List.of(<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Product</span>(<span class="hljs-string">&quot;product1&quot;</span>, <span class="hljs-string">&quot;Product 1&quot;</span>, <span class="hljs-number">50.0</span>),<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Product</span>(<span class="hljs-string">&quot;product2&quot;</span>, <span class="hljs-string">&quot;Product 2&quot;</span>, <span class="hljs-number">75.0</span>)<br>        );<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>案例分析</strong>：</p>
+<ol>
+<li><strong>虚拟线程</strong>：为每个用户请求创建独立的虚拟线程，充分利用系统资源</li>
+<li><strong>模式匹配</strong>：使用模式匹配处理 API 响应，代码更简洁、更安全</li>
+<li><strong>记录类型</strong>：使用记录类型定义数据模型，减少样板代码</li>
+<li><strong>密封类</strong>：使用密封类定义 API 响应类型，确保类型安全</li>
+</ol>
+<h2 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h2><h3 id="虚拟线程-vs-传统线程"><a href="#虚拟线程-vs-传统线程" class="headerlink" title="虚拟线程 vs 传统线程"></a>虚拟线程 vs 传统线程</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>传统线程</th>
+<th>虚拟线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内存占用</td>
+<td>约1MB&#x2F;线程</td>
+<td>约2KB&#x2F;线程</td>
+</tr>
+<tr>
+<td>创建时间</td>
+<td>约1ms</td>
+<td>约0.1μs</td>
+</tr>
+<tr>
+<td>上下文切换</td>
+<td>约1μs</td>
+<td>约0.1μs</td>
+</tr>
+<tr>
+<td>并发能力</td>
+<td>受系统限制（通常数千）</td>
+<td>支持数百万</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>CPU密集型任务</td>
+<td>I&#x2F;O密集型任务</td>
+</tr>
+</tbody></table>
+<h3 id="模式匹配-vs-传统方式"><a href="#模式匹配-vs-传统方式" class="headerlink" title="模式匹配 vs 传统方式"></a>模式匹配 vs 传统方式</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>传统方式</th>
+<th>模式匹配</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>代码行数</td>
+<td>多</td>
+<td>少</td>
+</tr>
+<tr>
+<td>可读性</td>
+<td>一般</td>
+<td>好</td>
+</tr>
+<tr>
+<td>类型安全性</td>
+<td>一般</td>
+<td>高</td>
+</tr>
+<tr>
+<td>维护性</td>
+<td>一般</td>
+<td>好</td>
+</tr>
+<tr>
+<td>出错概率</td>
+<td>较高</td>
+<td>较低</td>
+</tr>
+</tbody></table>
+<h2 id="技术演进的意义"><a href="#技术演进的意义" class="headerlink" title="技术演进的意义"></a>技术演进的意义</h2><h3 id="虚拟线程的意义"><a href="#虚拟线程的意义" class="headerlink" title="虚拟线程的意义"></a>虚拟线程的意义</h3><ol>
+<li><strong>并发编程革命</strong>：虚拟线程彻底改变了 Java 并发编程的范式，使高并发应用的开发变得更加简单</li>
+<li><strong>性能提升</strong>：显著提高了 I&#x2F;O 密集型应用的吞吐量和响应速度</li>
+<li><strong>代码简化</strong>：允许使用同步代码风格编写异步逻辑，避免了回调地狱</li>
+<li><strong>资源利用率</strong>：更高效地利用系统资源，减少内存占用</li>
+</ol>
+<h3 id="模式匹配的意义"><a href="#模式匹配的意义" class="headerlink" title="模式匹配的意义"></a>模式匹配的意义</h3><ol>
+<li><strong>代码简化</strong>：减少了样板代码，使代码更加简洁</li>
+<li><strong>类型安全</strong>：提供了更强大的类型检查和类型推断</li>
+<li><strong>可读性提升</strong>：使代码逻辑更加清晰，易于理解和维护</li>
+<li><strong>功能增强</strong>：支持更复杂的模式匹配场景</li>
+</ol>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>虚拟线程和模式匹配是 Java 近年来最具革命性的两个新特性，它们不仅提高了代码的质量和可维护性，也显著提升了应用的性能。通过本文的详细分析和代码示例，我们可以看到这些特性如何在实际应用中发挥作用。</p>
+<p>作为 Java 开发者，我们应该积极学习和采用这些新特性，以充分利用 Java 平台的能力。随着 Java 的不断发展，我们可以期待未来版本带来更多创新和改进，使 Java 成为更强大、更现代化的编程语言。</p>
+<h2 id="建议"><a href="#建议" class="headerlink" title="建议"></a>建议</h2><ol>
+<li><p><strong>学习路径</strong>：</p>
+<ul>
+<li>先掌握虚拟线程的基本使用和最佳实践</li>
+<li>然后学习模式匹配的各种用法</li>
+<li>最后尝试将两者结合使用</li>
+</ul>
+</li>
+<li><p><strong>迁移策略</strong>：</p>
+<ul>
+<li>对于新项目，直接使用 JDK 21 及以上版本</li>
+<li>对于现有项目，逐步迁移到支持虚拟线程的版本</li>
+<li>优先在 I&#x2F;O 密集型模块中使用虚拟线程</li>
+</ul>
+</li>
+<li><p><strong>实践建议</strong>：</p>
+<ul>
+<li>从小规模实验开始，逐步扩大应用范围</li>
+<li>监控虚拟线程的使用情况，确保最佳性能</li>
+<li>结合模式匹配和其他现代 Java 特性，如记录类型和密封类</li>
+</ul>
+</li>
+</ol>
+<p>通过掌握这些新特性，我们可以编写更加现代、高效和可维护的 Java 代码，为构建高质量的应用程序奠定基础。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/programming/" class="category-chain-item">programming</a>
+  
+  
+    <span>></span>
+    
+  <a href="/programming/java/" class="category-chain-item">java</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Java/" class="print-no-link">#Java</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8B/" class="print-no-link">#虚拟线程</a>
+      
+        <a href="/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/" class="print-no-link">#模式匹配</a>
+      
+        <a href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" class="print-no-link">#并发编程</a>
+      
+        <a href="/tags/%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/" class="print-no-link">#代码优化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Java 新特性深度解析：虚拟线程与模式匹配的实际应用</div>
+      <div>https://bugchloe.github.io/2026/03/24/2026-03-24-java-virtual-threads-pattern-matching-practical/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>BugChloe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/03/25/2026-03-25-spring-afternoon-life-note/" title="春日午后的慢时光">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">春日午后的慢时光</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/03/24/2026-03-24-java-jdk17-21-virtual-threads-pattern-matching/" title="Java 版本新特性详解：JDK 17-21 虚拟线程与模式匹配">
+                        <span class="hidden-mobile">Java 版本新特性详解：JDK 17-21 虚拟线程与模式匹配</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/10.6.1/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom-mermaid.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

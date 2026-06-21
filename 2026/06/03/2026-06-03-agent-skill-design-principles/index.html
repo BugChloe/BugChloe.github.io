@@ -1,0 +1,879 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/ladybug.png">
+  <link rel="icon" href="/img/ladybug.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BugChloe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="最近，身边讨论 skill 的人突然多了起来。 工作群里有人分享自己写的 skill，甚至团队里也专门做了skill hub来维护和分享skills：整理会议纪要、生成周报、排查生产问题、分析日志、处理工单、生成报告。好像只要一个动作重复几次，就应该立刻做成 skill。 作为一线 IT 工作者，我对这种变化既兴奋，也有些思考。 过去，团队里总有几位擅长 shell 脚本和自动化的同事。别人还在手">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 的正确打开方式：提效、边界与设计原则">
+<meta property="og:url" content="https://bugchloe.github.io/2026/06/03/2026-06-03-agent-skill-design-principles/index.html">
+<meta property="og:site_name" content="BugChloe">
+<meta property="og:description" content="最近，身边讨论 skill 的人突然多了起来。 工作群里有人分享自己写的 skill，甚至团队里也专门做了skill hub来维护和分享skills：整理会议纪要、生成周报、排查生产问题、分析日志、处理工单、生成报告。好像只要一个动作重复几次，就应该立刻做成 skill。 作为一线 IT 工作者，我对这种变化既兴奋，也有些思考。 过去，团队里总有几位擅长 shell 脚本和自动化的同事。别人还在手">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bugchloe.github.io/img/skills.jpg">
+<meta property="article:published_time" content="2026-06-03T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-05T15:43:12.070Z">
+<meta property="article:author" content="BugChloe">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Skill">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bugchloe.github.io/img/skills.jpg">
+  
+  
+  
+  <title>Agent Skill 的正确打开方式：提效、边界与设计原则 - BugChloe</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bugchloe.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img src="/img/ladybug.png" srcset="/img/loading.gif" lazyload alt="Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;">
+      <strong>BugChloe</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/life/" target="_self">
+                <i class="iconfont icon-articles"></i>
+                <span>生活</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/english/" target="_self">
+                <i class="iconfont icon-chart"></i>
+                <span>学英语</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-category"></i>
+                <span>AI相关</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/model/" target="_self">
+                    <i class="iconfont icon-articles"></i>
+                    <span>模型</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/tools/" target="_self">
+                    <i class="iconfont icon-tags"></i>
+                    <span>工具</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/best-practices/" target="_self">
+                    <i class="iconfont icon-list"></i>
+                    <span>最佳实践</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-code"></i>
+                <span>编程</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/java/" target="_self">
+                    <i class="iconfont icon-author"></i>
+                    <span>Java</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/python/" target="_self">
+                    <i class="iconfont icon-copy"></i>
+                    <span>Python</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/frontend/" target="_self">
+                    <i class="iconfont icon-clock-fill"></i>
+                    <span>前端</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/miniprogram/" target="_self">
+                    <i class="iconfont icon-eye"></i>
+                    <span>小程序</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/postpage.webp') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Agent Skill 的正确打开方式：提效、边界与设计原则"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-03 08:00" pubdate>
+          2026年6月3日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 的正确打开方式：提效、边界与设计原则</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>最近，身边讨论 skill 的人突然多了起来。</p>
+<p>工作群里有人分享自己写的 skill，甚至团队里也专门做了skill hub来维护和分享skills：整理会议纪要、生成周报、排查生产问题、分析日志、处理工单、生成报告。好像只要一个动作重复几次，就应该立刻做成 skill。</p>
+<p>作为一线 IT 工作者，我对这种变化既兴奋，也有些思考。</p>
+<p>过去，团队里总有几位擅长 shell 脚本和自动化的同事。别人还在手动登录系统、复制命令、整理结果，他们已经把一串操作封装成脚本，一条命令跑完。这种能力让人佩服，但门槛不低：要非常熟悉和熟练掌握shell脚本，写完脚本还要花时间不断调试，更要熟悉系统本身。</p>
+<p>现在，skill 正在降低这个门槛。你不一定是脚本高手，也能把反复做的事情沉淀成可复用能力——整理会议纪要、分析日志、生成周报、归纳工单、汇总系统信息。</p>
+<p>这确实是 AI agent 进入日常工作后带来的变化。但实际用下来，我越来越觉得：<strong>skill 有价值，不等于凡事都应该 skill 化。</strong></p>
+<p><img src="/img/skills.jpg" srcset="/img/loading.gif" lazyload alt="AI Agent Skill Automation Workflow"></p>
+<h2 id="一、从-Chat-到-Agent：AI-工具的演进"><a href="#一、从-Chat-到-Agent：AI-工具的演进" class="headerlink" title="一、从 Chat 到 Agent：AI 工具的演进"></a>一、从 Chat 到 Agent：AI 工具的演进</h2><p>这两年，AI 工具的变化轨迹很清晰。</p>
+<p><strong>第一阶段，我们和 AI 聊天</strong>：解释概念、写文案、翻译、总结。AI 是”帮我想一想”的角色。</p>
+<p><strong>第二阶段，AI 开始调用工具</strong>：搜索资料、执行代码、读取文件、调用 API、连接数据库。AI 开始”帮我查一查”、”帮我跑一跑”。</p>
+<p><strong>第三阶段，本地 agent 进入真实工作环境</strong>：读项目、改代码、操作浏览器、处理文档、调用脚本。AI 从”帮我想一想”变成”帮我做一做”。</p>
+<p>那么问题来了：每次任务都要重新描述背景、步骤、判断标准和输出格式，效率不稳定，体验也割裂。</p>
+<p>于是，skill 就有了意义——把一类任务中稳定、可复用的部分沉淀下来。</p>
+<h2 id="二、Skill-不是提示词，而是工作方法"><a href="#二、Skill-不是提示词，而是工作方法" class="headerlink" title="二、Skill 不是提示词，而是工作方法"></a>二、Skill 不是提示词，而是工作方法</h2><p>很多人以为 skill 就是高级一点的 prompt，或者包装过的脚本。但我理解的 skill，更像一套<strong>被封装起来的工作方法</strong>。</p>
+<p>一个好的 skill，应该清晰说明：</p>
+<ul>
+<li><strong>什么场景下使用</strong>——边界在哪里</li>
+<li><strong>按什么步骤完成</strong>——流程是什么</li>
+<li><strong>判断标准是什么</strong>——如何衡量质量</li>
+<li><strong>输出格式是什么</strong>——结果长什么样</li>
+<li><strong>哪里需要人工确认</strong>——风险点在哪里</li>
+</ul>
+<p>所以，skill 的本质不是让 AI 多记住几句话，而是<strong>把一段工作流结构化</strong>。</p>
+<p>举个例子。会议纪要 skill，真正有价值的不是转文字，而是识别决议、行动项、负责人、截止时间和风险。日志分析 skill，真正有价值的不是解释某一行报错，而是沿着固定排障路径，结合时间、变更、影响范围，给出初步判断。</p>
+<p><strong>好的 skill，不是包装一个动作，而是沉淀一段工作方法。</strong></p>
+<h2 id="三、Skill-的确能提效：真实场景的价值"><a href="#三、Skill-的确能提效：真实场景的价值" class="headerlink" title="三、Skill 的确能提效：真实场景的价值"></a>三、Skill 的确能提效：真实场景的价值</h2><p>实际体验下来，skill 在某些场景的提效是真实存在的。</p>
+<p><strong>周报生成</strong>。原来要翻会议记录、看项目进展、查工作日志、整理项目风险、代办事项和下周计划。每一步都不难，但组合在一起很耗时间。如果 skill 能从这些材料里提取完成事项、进行中事项、风险点和待协调问题，生成统一格式的周报，节省的不只是打字时间，更是整理思路的时间。</p>
+<p><strong>故障复盘</strong>。很多时候不是不会写，而是每次都要重新组织结构：背景、影响范围、时间线、根因、处理过程、改进措施。如果 skill 能先生成一个结构完整的初稿，人再去校正，效率会高很多。</p>
+<p>类似场景还有代码 review、自动化测试、发布事项评审、故障复盘报告、知识库整理等。它们的共同点：</p>
+<ul>
+<li>高频发生</li>
+<li>流程稳定</li>
+<li>有判断标准</li>
+<li>涉及多个信息源</li>
+<li>输出质量有要求</li>
+</ul>
+<p>这种场景下，skill 的价值很明显。</p>
+<h2 id="四、但不是所有事情都值得-Skill-化：一个反例"><a href="#四、但不是所有事情都值得-Skill-化：一个反例" class="headerlink" title="四、但不是所有事情都值得 Skill 化：一个反例"></a>四、但不是所有事情都值得 Skill 化：一个反例</h2><p>最近看到一个有意思的例子。</p>
+<p>有位同事分享了自己写的 skill，用来查询某个司内系统的归属团队和负责人。这个信息不敏感，登录系统就能公开查询。从技术上看，当然可以自动化。</p>
+<p>但实际使用时，要先给 skill 脚本打开浏览器操作权限，确保已登录对应网站。然后 agent 驱动浏览器打开页面、输入查询条件、等待结果、读取页面内容，中间还要和大模型交互。最后得到的，只是某个系统归哪个团队、负责人是谁。</p>
+<p>这时会有一个直观感觉：<strong>自己打开系统查，可能几十秒就结束了。但为了用这个 skill，反而要授权、等待、看 agent 操作浏览器，还要承担页面变化导致失败的可能性。</strong></p>
+<p>这就有点多此一举。</p>
+<p>不是说这个尝试没意义。相反，它说明大家开始思考如何让 agent 参与日常工作。但它也提醒我们：<strong>不是所有可自动化的动作，都值得被设计成 skill。</strong></p>
+<p>不要因为 agent 能点按钮，就把所有按钮都交给 agent 点。</p>
+<h2 id="五、Skill-化之前，先问五个问题"><a href="#五、Skill-化之前，先问五个问题" class="headerlink" title="五、Skill 化之前，先问五个问题"></a>五、Skill 化之前，先问五个问题</h2><p>决定要不要把一个工作做成 skill 之前，可以先问五个问题：</p>
+<p><strong>第一，这个任务是否足够高频？</strong></p>
+<p>偶尔查一次、临时做一次，不一定值得封装。</p>
+<p><strong>第二，它是否有稳定流程？</strong></p>
+<p>如果每次情况都差很多，过早做成 skill 反而容易变形。</p>
+<p><strong>第三，它是否有判断含量？</strong></p>
+<p>只是查一个字段，价值有限。综合多个系统判断风险、归属、影响范围，价值就高很多。</p>
+<p><strong>第四，它是否真的比手动更快？</strong></p>
+<p>有些自动化看起来漂亮，但实际要授权、等待、调模型、处理异常，最后比手动还慢。</p>
+<p><strong>第五，维护和风险成本是否可控？</strong></p>
+<p>依赖浏览器页面、登录态、临时权限的 skill，维护成本往往不低。后台系统里还有修改、删除、审批等高风险操作，更要谨慎。</p>
+<p>简单说：<strong>高频、稳定、有判断、跨工具、风险可控的任务，更值得 skill 化。</strong></p>
+<h2 id="六、什么样的-Skill-更值得做：从动作到工作流"><a href="#六、什么样的-Skill-更值得做：从动作到工作流" class="headerlink" title="六、什么样的 Skill 更值得做：从动作到工作流"></a>六、什么样的 Skill 更值得做：从动作到工作流</h2><p>从一线 IT 工作看，更值得做 skill 的，不是”查一个字段”这种单点动作，而是能沉淀工作流的场景。</p>
+<p><strong>排障 skill</strong>：读取日志、识别异常模式、关联最近变更、判断影响范围，给出初步排查方向。</p>
+<p><strong>周报 skill</strong>：从项目进展、工单记录、会议纪要中整理完成事项、风险、阻塞和下周计划。</p>
+<p><strong>发布评审 skill</strong>：检查变更内容、影响范围、回滚方案、监控指标和沟通对象是否完整。</p>
+<p><strong>知识库整理 skill</strong>：把一次故障处理过程沉淀成标准排障文档。</p>
+<p>区别在于：</p>
+<ul>
+<li>查一个字段，可能不值得；把多个系统的信息汇总成可行动结论，就值得。</li>
+<li>执行一个按钮，可能不值得；沉淀一套判断流程，就值得。</li>
+</ul>
+<p><strong>Skill 不应该只是让 agent 模拟人点页面，而应该优先沉淀那些有判断、有组合、有复用价值的工作流。</strong></p>
+<h2 id="七、设计-Skill-的七个原则"><a href="#七、设计-Skill-的七个原则" class="headerlink" title="七、设计 Skill 的七个原则"></a>七、设计 Skill 的七个原则</h2><p>如果要设计一个真正有价值的 skill，至少要注意这几点：</p>
+<p><strong>1. 从真实问题出发，不从炫技出发</strong></p>
+<p>先问这件事到底哪里耗时，哪里容易出错，哪里依赖经验。</p>
+<p><strong>2. 从工作流出发，不从单个动作出发</strong></p>
+<p>单个动作如果手动很快，不一定需要 skill。更值得沉淀的是动作背后的方法。</p>
+<p><strong>3. 明确输入和输出</strong></p>
+<p>输入材料是什么，最终产出什么，格式是什么，给谁看，用来做什么。</p>
+<p><strong>4. 把判断标准写进去</strong></p>
+<p>什么算高优先级，什么算风险，什么情况需要升级，什么信息必须保留。</p>
+<p><strong>5. 保留人工确认点</strong></p>
+<p>涉及发消息、改数据、提交审批、删除内容、影响客户的动作，都应该让人最后确认。</p>
+<p><strong>6. 优先使用稳定接口和结构化数据</strong></p>
+<p>如果能通过 API、数据库、日志文件、配置文件解决，就不要过度依赖浏览器模拟点击。</p>
+<p><strong>7. 关注整体耗时</strong></p>
+<p>一个 skill 跑通了，不代表它真的提效。要看从发起、授权、等待、处理异常到拿到结果的完整时间。</p>
+<h2 id="八、Skill-是工作方式升级，不是自动化执念"><a href="#八、Skill-是工作方式升级，不是自动化执念" class="headerlink" title="八、Skill 是工作方式升级，不是自动化执念"></a>八、Skill 是工作方式升级，不是自动化执念</h2><p>我觉得 skill 最有意思的地方，不只是它能替我们做多少事，而是它改变了我们看待日常工作的方式。</p>
+<p>过去，很多自动化能力掌握在少数高手手里。现在，skill 让更多一线工作者也能参与进来——重新审视自己的工作：哪些部分是重复的，哪些判断是稳定的，哪些经验可以沉淀，哪些流程可以复用。</p>
+<p>这是很有价值的变化。但越是这样，越需要边界感。</p>
+<ul>
+<li>不是每一次查询都要 skill 化。</li>
+<li>不是每一个按钮都要交给 agent。</li>
+<li>不是每一个日常动作都值得包装成自动化流程。</li>
+</ul>
+<p><strong>Skill 的正确打开方式，不是自动化一切，而是识别哪些工作值得被沉淀成能力。</strong></p>
+<p>查一条数据，也许手动更快。但整理一套判断流程、复用一段排障经验、沉淀一种协作方式——这才是 skill 真正有价值的地方。</p>
+<p>成熟的 AI 使用者，不是把所有事情都交给 agent，而是知道哪些能力值得设计，哪些操作保持简单。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/ai/" class="category-chain-item">ai</a>
+  
+  
+    <span>></span>
+    
+  <a href="/ai/best-practices/" class="category-chain-item">best-practices</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/AI/" class="print-no-link">#AI</a>
+      
+        <a href="/tags/Agent/" class="print-no-link">#Agent</a>
+      
+        <a href="/tags/Skill/" class="print-no-link">#Skill</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 的正确打开方式：提效、边界与设计原则</div>
+      <div>https://bugchloe.github.io/2026/06/03/2026-06-03-agent-skill-design-principles/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>BugChloe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月3日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/06/14/2026-06-14-ai-understanding-myth/" title="AI其实根本不懂你在说什么">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">AI其实根本不懂你在说什么</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/24/2026-04-12-wechat-digest-automation/" title="一个下午，我把&#34;公众号焦虑&#34;变成了自动日报">
+                        <span class="hidden-mobile">一个下午，我把&#34;公众号焦虑&#34;变成了自动日报</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/10.6.1/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom-mermaid.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,893 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/ladybug.png">
+  <link rel="icon" href="/img/ladybug.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BugChloe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="最近看到一段关于某个程序员对 AI 和大模型理解的采访，发现很多人对大模型的基本工作原理也是一知半解。我就在想怎么能简单直白地把这个问题讲明白，让非专业人士也能一听就懂。 比如你手机上的豆包、DeepSeek 或者元宝，这些 AI 助手你可能都用过——应该有过这种感觉——它好像真的”懂”了。你问它一个问题，它给你一段有条有理的回答，像极了一个聪明的人类。其实真实情况是它压根不懂：它只是太会猜了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI其实根本不懂你在说什么">
+<meta property="og:url" content="https://bugchloe.github.io/2026/06/14/2026-06-14-ai-understanding-myth/index.html">
+<meta property="og:site_name" content="BugChloe">
+<meta property="og:description" content="最近看到一段关于某个程序员对 AI 和大模型理解的采访，发现很多人对大模型的基本工作原理也是一知半解。我就在想怎么能简单直白地把这个问题讲明白，让非专业人士也能一听就懂。 比如你手机上的豆包、DeepSeek 或者元宝，这些 AI 助手你可能都用过——应该有过这种感觉——它好像真的”懂”了。你问它一个问题，它给你一段有条有理的回答，像极了一个聪明的人类。其实真实情况是它压根不懂：它只是太会猜了。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-14T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-14T12:29:04.442Z">
+<meta property="article:author" content="BugChloe">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="大模型">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>AI其实根本不懂你在说什么 - BugChloe</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bugchloe.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img src="/img/ladybug.png" srcset="/img/loading.gif" lazyload alt="Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;">
+      <strong>BugChloe</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/life/" target="_self">
+                <i class="iconfont icon-articles"></i>
+                <span>生活</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/english/" target="_self">
+                <i class="iconfont icon-chart"></i>
+                <span>学英语</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-category"></i>
+                <span>AI相关</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/model/" target="_self">
+                    <i class="iconfont icon-articles"></i>
+                    <span>模型</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/tools/" target="_self">
+                    <i class="iconfont icon-tags"></i>
+                    <span>工具</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/best-practices/" target="_self">
+                    <i class="iconfont icon-list"></i>
+                    <span>最佳实践</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-code"></i>
+                <span>编程</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/java/" target="_self">
+                    <i class="iconfont icon-author"></i>
+                    <span>Java</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/python/" target="_self">
+                    <i class="iconfont icon-copy"></i>
+                    <span>Python</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/frontend/" target="_self">
+                    <i class="iconfont icon-clock-fill"></i>
+                    <span>前端</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/miniprogram/" target="_self">
+                    <i class="iconfont icon-eye"></i>
+                    <span>小程序</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/postpage.webp') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="AI其实根本不懂你在说什么"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-14 08:00" pubdate>
+          2026年6月14日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">AI其实根本不懂你在说什么</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>最近看到一段关于某个程序员对 AI 和大模型理解的采访，发现很多人对大模型的基本工作原理也是一知半解。我就在想怎么能简单直白地把这个问题讲明白，让非专业人士也能一听就懂。</p>
+<p>比如你手机上的豆包、DeepSeek 或者元宝，这些 AI 助手你可能都用过——应该有过这种感觉——它好像真的”懂”了。你问它一个问题，它给你一段有条有理的回答，像极了一个聪明的人类。其实真实情况是它压根不懂：<strong>它只是太会猜了。</strong> 接下来我就把关于大模型和 AI 的几个基本概念给大家捋一捋。</p>
+<hr>
+<h2 id="一、猜词机器——大模型的核心秘密"><a href="#一、猜词机器——大模型的核心秘密" class="headerlink" title="一、猜词机器——大模型的核心秘密"></a>一、猜词机器——大模型的核心秘密</h2><p>大模型从出生到长大，只学了一件事：<strong>猜下一个词。</strong></p>
+<p>举个例子。你输入”中国的首都是”，模型内部算一个概率表：</p>
+<ul>
+<li>“北京” → 98.7%</li>
+<li>“上海” → 0.3%</li>
+<li>“东京” → 0.1%</li>
+</ul>
+<p>选最高的那个，输出。然后继续猜下一个。</p>
+<pre><code class=" mermaid">graph LR
+    A[&quot;用户输入: 中国的首都是&quot;] --&gt; B[&quot;模型算概率&quot;]
+    B --&gt; C[&quot;北京: 98.7%&quot;]
+    B --&gt; D[&quot;上海: 0.3%&quot;]
+    B --&gt; E[&quot;东京: 0.1%&quot;]
+    C --&gt; F[&quot;选最高概率的&quot;]
+    F --&gt; G[&quot;输出, 继续猜下一个词&quot;]
+</code></pre>
+
+<p>整个对话，都是这样一句一句”猜”出来的。没有思考，没有意识。</p>
+<p>你可能想问：凭什么猜这么准？</p>
+<p>答案有点无聊：<strong>它读完了整个互联网。</strong> 维基百科、几亿本书、论坛帖子、GitHub 代码、论文新闻……总量是<strong>几万亿个小片段</strong>（专业术语叫 token，把一段文字拆成更小单元，可能是一个词的一部分、一个完整的词、或者一个标点符号）。</p>
+<pre><code class=" mermaid">graph TD
+    D1[&quot;维基百科&quot;] --&gt; T[&quot;切碎成token&quot;]
+    D2[&quot;书籍&quot;] --&gt; T
+    D3[&quot;论坛/代码/新闻&quot;] --&gt; T
+    T --&gt; M[&quot;训练: 猜下一个词&quot;]
+    M --&gt; R1[&quot;学会语法&quot;]
+    M --&gt; R2[&quot;记住事实&quot;]
+    M --&gt; R3[&quot;学会推理&quot;]
+</code></pre>
+
+<p>你打一句”中国的首都是”，它在训练数据里见过几百万次。不是在理解你，而是在统计上记住了：这句话后面，大概率跟着”北京”。</p>
+<p>所以有个很反直觉的事实：<strong>它只是概率算得好，不是真的会思考。</strong></p>
+<p>我给朋友解释的时候用三个比喻：</p>
+<p><strong>超级填字游戏选手</strong>——给你不完整的一句话，填上最合适的下一个字。区别是你填字靠智商，它靠见过几万亿句。</p>
+<p><strong>读过全网的模仿大师</strong>——它不”理解”光合作用，但它见过这个词在几十万种上下文里出现的样子，所以能装得很懂。</p>
+<p><strong>靠刷题上岸的学生</strong>——先广泛阅读，再背标准答案（按模板学），最后反复刷模拟题看打分，琢磨出老师喜欢的答题风格（人工打分教出来的）。</p>
+<hr>
+<h2 id="二、从”续写机器”到”对话助手”"><a href="#二、从”续写机器”到”对话助手”" class="headerlink" title="二、从”续写机器”到”对话助手”"></a>二、从”续写机器”到”对话助手”</h2><p>预训练完的模型，本质上就是个文本续写器。给它一个开头，它能往下编，但没法好好回答问题。</p>
+<p>要让它会聊天，还得再走两步。</p>
+<p><strong>第一步：背标准答案（按模板学）</strong></p>
+<p>找一堆人来写问答对。比如”用大白话解释黑洞”→”黑洞就是引力特别强、连光都跑不出来的区域”。几万条这样的数据让模型照着学，它慢慢就懂了：用户提问的时候，我应该输出答案，而不是继续往下编故事。</p>
+<p><strong>第二步：让人来给答案打分、教模型学习好坏</strong></p>
+<p>这一步才是真正下功夫的地方。比如让 AI 写请假邮件，它可能写出好几个不同的版本：</p>
+<p>版本 A 的请假邮件写得正式得体，版本 B 吊儿郎当，版本 C 语气不对。标注员按”有帮助、诚实、无害”排个序，然后用这个数据训练一个打分器。最后用这个打分器来训练模型——得分高的回答就学，得分低的就改，反复来回调整。</p>
+<pre><code class=" mermaid">graph LR
+    S1[&quot;AI写多个版本&quot;] --&gt; S2[&quot;人工排序: A&gt;B&gt;C&quot;]
+    S2 --&gt; S3[&quot;训练打分器&quot;]
+    S3 --&gt; S4[&quot;用打分器训练模型&quot;]
+</code></pre>
+
+<p>ChatGPT 和 Claude 那些让你觉得舒服的特质——回答有条理、语气温和、知道什么时候说”我不确定”——大部分就是这么磨出来的。这一步背后是大量标注员人工喂给 AI 的。</p>
+<hr>
+<h2 id="三、AI-产品又在大模型外面干了什么"><a href="#三、AI-产品又在大模型外面干了什么" class="headerlink" title="三、AI 产品又在大模型外面干了什么"></a>三、AI 产品又在大模型外面干了什么</h2><p>很多人以为大模型就是 AI 产品本身。其实模型只是一台文本生成引擎，你感受到的那些”智能体验”，是好几层工程堆出来的。</p>
+<p><strong>偷偷塞纸条（系统提示）</strong>：你提问之前，AI 产品先偷偷给模型塞一段话。比如你跟 ChatGPT 对话，ChatGPT 会先给大模型一段提示词”你叫 Claude，你是 Anthropic 开发的，知识截止于 2025 年，用中文回答”。你看不到这段话，但它决定了整个对话的画风。</p>
+<p><strong>加道安检（安全过滤）</strong>：大模型输出到你眼前之前，过了好几道关——暴力词过滤、分类器判断、规则引擎兜底。</p>
+<p><strong>帮你查资料（RAG）</strong>：大模型知识是有截止日期的。你问”今天天气怎么样”，AI 产品先调 API 拿到数据，再塞给模型。所以它能答出来——不是它知道，是有人替它查了。</p>
+<p><strong>边写边发（流式输出）</strong>：你发出去不到一秒就看到回答在”打字”。这是工程优化的功劳，不是模型反应快。</p>
+<p><strong>翻译官（多模态）</strong>：图片、语音、文件——这些都不是模型天生能处理的。图片要切成小块编码，语音要转成文字，PDF 要提取文本。产品层帮你搞定了，你才觉得它什么都能读。</p>
+<hr>
+<h2 id="四、一个经常被误解的事：工具调用到底是谁在做"><a href="#四、一个经常被误解的事：工具调用到底是谁在做" class="headerlink" title="四、一个经常被误解的事：工具调用到底是谁在做"></a>四、一个经常被误解的事：工具调用到底是谁在做</h2><p>很多人觉得”AI 自己会去搜索、会调用工具”。</p>
+<p>真相是：<strong>大模型不会调用任何工具。它只是在输出文本的时候，学会了一种特殊的格式。</strong></p>
+<pre><code class=" mermaid">sequenceDiagram
+    participant U as 你
+    participant A as 产品层
+    participant L as 大模型
+    participant T as 搜索API
+    U-&gt;&gt;A: 查航班
+    A-&gt;&gt;L: 读提示+问题
+    Note over L: 决定调什么工具
+    L--&gt;&gt;A: 输出function_call
+    A-&gt;&gt;T: 真的去搜
+    T--&gt;&gt;A: 返回结果
+    A-&gt;&gt;L: 结果塞回上下文
+    L--&gt;&gt;A: 生成回答
+    A-&gt;&gt;U: 展示结果
+</code></pre>
+
+<p>你搜”北京到上海的航班”，大模型生成的是这样一段文本：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;function_call&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;search_web&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;arguments&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&#123;\&quot;query\&quot;: \&quot;北京到上海航班\&quot;&#125;&quot;</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>然后它停了。<strong>真的去调 API 的，是产品层的代码，不是模型。</strong></p>
+<p>为什么非要隔一层？安全。如果模型能直接调 API，你让它”删库”它就真去删了。产品层卡在中间，可以决定”这个操作不允许”。</p>
+<p>所以准确的说法是：<strong>大模型有”表达调用意图”的能力，Agent 有”真的去执行”的能力。</strong> 两个凑一块，看起来就像 AI 会自己查资料。</p>
+<hr>
+<h2 id="五、Agent-时代——当-AI-不再只是”说话”"><a href="#五、Agent-时代——当-AI-不再只是”说话”" class="headerlink" title="五、Agent 时代——当 AI 不再只是”说话”"></a>五、Agent 时代——当 AI 不再只是”说话”</h2><p>ChatGPT 主要干的事是”问答”。但 Claude Code、Codex、OpenHands 这些，干的事不太一样——它们是”干活”。</p>
+<p>区别很直观：</p>
+<p>ChatGPT：你问 → 它答 → 你自己动手去做</p>
+<p>Agent：你给一个目标 → 它自己拆步骤 → 执行 → 发现问题 → 自己修 → 继续 → 直到干完</p>
+<p>要做到这个，需要几个升级：</p>
+<p><strong>工具系统</strong>——不只是打字，还能读写文件、跑命令、搜代码。</p>
+<p><strong>沙箱环境</strong>——它在里面真的把代码跑起来，看结果，报错了自己读日志修。</p>
+<p><strong>循环推理</strong>——干一步看一步的结果，决定下一步干什么，而不是一次生成完拉倒。</p>
+<p><strong>任务拆解</strong>——你说”帮我写个博客系统”，它自己拆成：创建项目、写数据库、写 API、写前端、写测试，一条一条干。</p>
+<p><strong>错误恢复</strong>——跑 npm 报错了？自己读日志、改配置、重跑。</p>
+<hr>
+<h2 id="六、移动端-Agent：是噱头还是真有用？"><a href="#六、移动端-Agent：是噱头还是真有用？" class="headerlink" title="六、移动端 + Agent：是噱头还是真有用？"></a>六、移动端 + Agent：是噱头还是真有用？</h2><p>这个问题我自己想过。结论：<strong>大部分宣传是噱头，但有四个场景是真的。</strong></p>
+<h3 id="为啥说是噱头"><a href="#为啥说是噱头" class="headerlink" title="为啥说是噱头"></a>为啥说是噱头</h3><p>PC 端本来就能做的事，非要搬到手机上——为了省那几分钟打开电脑的时间？手机打字慢、屏小，看个报错日志都费劲。</p>
+<h3 id="但有些场景是真的"><a href="#但有些场景是真的" class="headerlink" title="但有些场景是真的"></a>但有些场景是真的</h3><p><strong>长时间任务监控</strong>——训练模型几小时，你总不能坐电脑前等。手机上偶尔看一眼进度就好。</p>
+<p><strong>本地算力遥控</strong>——这个最硬核。你的电脑有 4090，手机没有。数据在本地不能上传。在外面的时候，让家里的机器帮你跑活。</p>
+<p><strong>碎片灵感捕获</strong>——半夜突然想到一个 bug 怎么修，手机上说一句，第二天醒来电脑上已经改好了。</p>
+<p><strong>不打断当前工作</strong>——正在集中精力写代码，不想切窗口。手机上发条指令让 Agent 在后台干。</p>
+<p>一句话：<strong>想用它替代电脑是扯淡，但当成遥控器加灵感笔记本，挺好用的。</strong></p>
+<hr>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>回头看整条链路：读全互联网 → 学会猜词 → 学会回答 → 学会高质量回答 → 产品层包装（系统提示、安全、RAG、流式）→ 工具化 → 自动化循环。</p>
+<p>每一步都是工程上的加法。没有哪一步让模型真的”理解”了什么东西。</p>
+<p>但它确实从一个只会写字的引擎，变成了能帮你干活、能调试代码、能管理任务的数字同事——就是那种虽然不懂你在干什么，但活儿干得挺利索的同事。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/ai/" class="category-chain-item">ai</a>
+  
+  
+    <span>></span>
+    
+  <a href="/ai/model/" class="category-chain-item">model</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/AI/" class="print-no-link">#AI</a>
+      
+        <a href="/tags/Agent/" class="print-no-link">#Agent</a>
+      
+        <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="print-no-link">#大模型</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>AI其实根本不懂你在说什么</div>
+      <div>https://bugchloe.github.io/2026/06/14/2026-06-14-ai-understanding-myth/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>BugChloe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/06/14/2026-06-14-ai-agent-architecture/" title="AI Agent 它到底是怎么做到可以干活的">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">AI Agent 它到底是怎么做到可以干活的</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/03/2026-06-03-agent-skill-design-principles/" title="Agent Skill 的正确打开方式：提效、边界与设计原则">
+                        <span class="hidden-mobile">Agent Skill 的正确打开方式：提效、边界与设计原则</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/10.6.1/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom-mermaid.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

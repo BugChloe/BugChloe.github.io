@@ -1,0 +1,19 @@
+.markdown-body .highlight.mermaid {
+  width: 70% !important;
+  margin: 1rem auto !important;
+}
+
+.markdown-body .highlight.mermaid svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.mermaid-svg-container {
+  max-width: 70% !important;
+  margin: 0 auto !important;
+}
+
+.mermaid-wrapper {
+  max-width: 70% !important;
+  margin: 0 auto !important;
+}

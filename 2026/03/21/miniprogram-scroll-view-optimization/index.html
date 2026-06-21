@@ -1,0 +1,872 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/ladybug.png">
+  <link rel="icon" href="/img/ladybug.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BugChloe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="问题背景在微信小程序中，当使用 scroll-view 展示大量数据（如商品列表、聊天记录）时，经常会遇到以下问题：  滚动卡顿、掉帧 内存占用过高导致闪退 白屏时间过长  这是因为小程序一次性渲染了所有节点，DOM 节点过多导致性能下降。 解决方案：虚拟列表（Virtual List）核心思想：只渲染视口内可见的列表项，回收视口外的节点。 方案一：使用小程序官方 recycle-view1234">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微信小程序长列表性能优化：解决 scroll-view 卡顿问题">
+<meta property="og:url" content="https://bugchloe.github.io/2026/03/21/miniprogram-scroll-view-optimization/index.html">
+<meta property="og:site_name" content="BugChloe">
+<meta property="og:description" content="问题背景在微信小程序中，当使用 scroll-view 展示大量数据（如商品列表、聊天记录）时，经常会遇到以下问题：  滚动卡顿、掉帧 内存占用过高导致闪退 白屏时间过长  这是因为小程序一次性渲染了所有节点，DOM 节点过多导致性能下降。 解决方案：虚拟列表（Virtual List）核心思想：只渲染视口内可见的列表项，回收视口外的节点。 方案一：使用小程序官方 recycle-view1234">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-21T14:00:00.000Z">
+<meta property="article:modified_time" content="2026-03-21T15:45:00.776Z">
+<meta property="article:author" content="BugChloe">
+<meta property="article:tag" content="scroll-view">
+<meta property="article:tag" content="微信小程序">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="长列表">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>微信小程序长列表性能优化：解决 scroll-view 卡顿问题 - BugChloe</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bugchloe.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img src="/img/ladybug.png" srcset="/img/loading.gif" lazyload alt="Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;">
+      <strong>BugChloe</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/life/" target="_self">
+                <i class="iconfont icon-articles"></i>
+                <span>生活</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/english/" target="_self">
+                <i class="iconfont icon-chart"></i>
+                <span>学英语</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-category"></i>
+                <span>AI相关</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/model/" target="_self">
+                    <i class="iconfont icon-articles"></i>
+                    <span>模型</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/tools/" target="_self">
+                    <i class="iconfont icon-tags"></i>
+                    <span>工具</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/best-practices/" target="_self">
+                    <i class="iconfont icon-list"></i>
+                    <span>最佳实践</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-code"></i>
+                <span>编程</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/java/" target="_self">
+                    <i class="iconfont icon-author"></i>
+                    <span>Java</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/python/" target="_self">
+                    <i class="iconfont icon-copy"></i>
+                    <span>Python</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/frontend/" target="_self">
+                    <i class="iconfont icon-clock-fill"></i>
+                    <span>前端</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/miniprogram/" target="_self">
+                    <i class="iconfont icon-eye"></i>
+                    <span>小程序</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/postpage.webp') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="微信小程序长列表性能优化：解决 scroll-view 卡顿问题"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-03-21 22:00" pubdate>
+          2026年3月21日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">微信小程序长列表性能优化：解决 scroll-view 卡顿问题</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>在微信小程序中，当使用 <code>scroll-view</code> 展示大量数据（如商品列表、聊天记录）时，经常会遇到以下问题：</p>
+<ul>
+<li><strong>滚动卡顿、掉帧</strong></li>
+<li><strong>内存占用过高导致闪退</strong></li>
+<li><strong>白屏时间过长</strong></li>
+</ul>
+<p>这是因为小程序一次性渲染了所有节点，DOM 节点过多导致性能下降。</p>
+<h2 id="解决方案：虚拟列表（Virtual-List）"><a href="#解决方案：虚拟列表（Virtual-List）" class="headerlink" title="解决方案：虚拟列表（Virtual List）"></a>解决方案：虚拟列表（Virtual List）</h2><p>核心思想：<strong>只渲染视口内可见的列表项，回收视口外的节点</strong>。</p>
+<h3 id="方案一：使用小程序官方-recycle-view"><a href="#方案一：使用小程序官方-recycle-view" class="headerlink" title="方案一：使用小程序官方 recycle-view"></a>方案一：使用小程序官方 recycle-view</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-comment">// page.json</span><br><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;usingComponents&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;recycle-view&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;miniprogram-recycle-view/recycle-view&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;recycle-item&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;miniprogram-recycle-view/recycle-item&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- page.wxml --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">recycle-view</span> <span class="hljs-attr">batch</span>=<span class="hljs-string">&quot;&#123;&#123;batchSetRecycleData&#125;&#125;&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;recycleId&quot;</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;before&quot;</span>&gt;</span>列表头部内容<span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>  <br>  <span class="hljs-tag">&lt;<span class="hljs-name">recycle-item</span> <span class="hljs-attr">wx:for</span>=<span class="hljs-string">&quot;&#123;&#123;recycleList&#125;&#125;&quot;</span> <span class="hljs-attr">wx:key</span>=<span class="hljs-string">&quot;id&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;item&quot;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">image</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;&#123;&#123;item.image&#125;&#125;&quot;</span> <span class="hljs-attr">mode</span>=<span class="hljs-string">&quot;aspectFill&quot;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;content&quot;</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">text</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>&#123;&#123;item.title&#125;&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">text</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">text</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;price&quot;</span>&gt;</span>¥&#123;&#123;item.price&#125;&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">text</span>&gt;</span><br>      <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">recycle-item</span>&gt;</span><br>  <br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;after&quot;</span>&gt;</span>列表底部内容<span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">recycle-view</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// page.js</span><br><span class="hljs-keyword">import</span> createRecycleContext <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;miniprogram-recycle-view&#x27;</span><br><br><span class="hljs-title class_">Page</span>(&#123;<br>  <span class="hljs-attr">data</span>: &#123;<br>    <span class="hljs-attr">recycleList</span>: []<br>  &#125;,<br><br>  <span class="hljs-title function_">onReady</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">const</span> ctx = <span class="hljs-title function_">createRecycleContext</span>(&#123;<br>      <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;recycleId&#x27;</span>,<br>      <span class="hljs-attr">dataKey</span>: <span class="hljs-string">&#x27;recycleList&#x27;</span>,<br>      <span class="hljs-attr">page</span>: <span class="hljs-variable language_">this</span>,<br>      <span class="hljs-attr">itemSize</span>: &#123; <span class="hljs-comment">// 每项高度</span><br>        <span class="hljs-attr">width</span>: <span class="hljs-number">375</span>,<br>        <span class="hljs-attr">height</span>: <span class="hljs-number">120</span><br>      &#125;<br>    &#125;)<br><br>    <span class="hljs-comment">// 批量追加数据</span><br>    <span class="hljs-keyword">const</span> list = <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">generateData</span>(<span class="hljs-number">1000</span>) <span class="hljs-comment">// 1000条数据</span><br>    ctx.<span class="hljs-title function_">append</span>(list)<br>  &#125;,<br><br>  <span class="hljs-title function_">generateData</span>(<span class="hljs-params">count</span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">Array</span>.<span class="hljs-title function_">from</span>(&#123; <span class="hljs-attr">length</span>: count &#125;, <span class="hljs-function">(<span class="hljs-params">_, i</span>) =&gt;</span> (&#123;<br>      <span class="hljs-attr">id</span>: i,<br>      <span class="hljs-attr">title</span>: <span class="hljs-string">`商品 <span class="hljs-subst">$&#123;i + <span class="hljs-number">1</span>&#125;</span>`</span>,<br>      <span class="hljs-attr">price</span>: (<span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-number">1000</span>).<span class="hljs-title function_">toFixed</span>(<span class="hljs-number">2</span>),<br>      <span class="hljs-attr">image</span>: <span class="hljs-string">`https://picsum.photos/200/200?random=<span class="hljs-subst">$&#123;i&#125;</span>`</span><br>    &#125;))<br>  &#125;<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<h3 id="方案二：自定义虚拟列表组件"><a href="#方案二：自定义虚拟列表组件" class="headerlink" title="方案二：自定义虚拟列表组件"></a>方案二：自定义虚拟列表组件</h3><p>如果官方组件不满足需求，可以自定义实现：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// components/virtual-list/virtual-list.js</span><br><span class="hljs-title class_">Component</span>(&#123;<br>  <span class="hljs-attr">properties</span>: &#123;<br>    <span class="hljs-attr">listData</span>: &#123;<br>      <span class="hljs-attr">type</span>: <span class="hljs-title class_">Array</span>,<br>      <span class="hljs-attr">value</span>: []<br>    &#125;,<br>    <span class="hljs-attr">itemHeight</span>: &#123;<br>      <span class="hljs-attr">type</span>: <span class="hljs-title class_">Number</span>,<br>      <span class="hljs-attr">value</span>: <span class="hljs-number">100</span><br>    &#125;,<br>    <span class="hljs-attr">bufferSize</span>: &#123;<br>      <span class="hljs-attr">type</span>: <span class="hljs-title class_">Number</span>,<br>      <span class="hljs-attr">value</span>: <span class="hljs-number">5</span> <span class="hljs-comment">// 缓冲区大小</span><br>    &#125;<br>  &#125;,<br><br>  <span class="hljs-attr">data</span>: &#123;<br>    <span class="hljs-attr">visibleData</span>: [],<br>    <span class="hljs-attr">startIndex</span>: <span class="hljs-number">0</span>,<br>    <span class="hljs-attr">endIndex</span>: <span class="hljs-number">0</span>,<br>    <span class="hljs-attr">scrollTop</span>: <span class="hljs-number">0</span>,<br>    <span class="hljs-attr">listHeight</span>: <span class="hljs-number">0</span><br>  &#125;,<br><br>  <span class="hljs-attr">lifetimes</span>: &#123;<br>    <span class="hljs-title function_">attached</span>(<span class="hljs-params"></span>) &#123;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">calculateVisibleData</span>()<br>    &#125;<br>  &#125;,<br><br>  <span class="hljs-attr">observers</span>: &#123;<br>    <span class="hljs-string">&#x27;listData&#x27;</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">calculateVisibleData</span>()<br>    &#125;<br>  &#125;,<br><br>  <span class="hljs-attr">methods</span>: &#123;<br>    <span class="hljs-title function_">calculateVisibleData</span>(<span class="hljs-params"></span>) &#123;<br>      <span class="hljs-keyword">const</span> &#123; listData, itemHeight &#125; = <span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span><br>      <span class="hljs-keyword">const</span> listHeight = listData.<span class="hljs-property">length</span> * itemHeight<br>      <br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setData</span>(&#123; listHeight &#125;)<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">updateVisibleData</span>(<span class="hljs-number">0</span>)<br>    &#125;,<br><br>    <span class="hljs-title function_">updateVisibleData</span>(<span class="hljs-params">scrollTop</span>) &#123;<br>      <span class="hljs-keyword">const</span> &#123; listData, itemHeight, bufferSize &#125; = <span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span><br>      <span class="hljs-keyword">const</span> containerHeight = <span class="hljs-number">667</span> <span class="hljs-comment">// 视口高度，可根据实际调整</span><br><br>      <span class="hljs-comment">// 计算可见范围</span><br>      <span class="hljs-keyword">let</span> startIndex = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">floor</span>(scrollTop / itemHeight) - bufferSize<br>      <span class="hljs-keyword">let</span> endIndex = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>((scrollTop + containerHeight) / itemHeight) + bufferSize<br><br>      <span class="hljs-comment">// 边界处理</span><br>      startIndex = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">max</span>(<span class="hljs-number">0</span>, startIndex)<br>      endIndex = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(listData.<span class="hljs-property">length</span>, endIndex)<br><br>      <span class="hljs-keyword">const</span> visibleData = listData.<span class="hljs-title function_">slice</span>(startIndex, endIndex).<span class="hljs-title function_">map</span>(<span class="hljs-function">(<span class="hljs-params">item, index</span>) =&gt;</span> (&#123;<br>        ...item,<br>        <span class="hljs-attr">_index</span>: startIndex + index,<br>        <span class="hljs-attr">_top</span>: (startIndex + index) * itemHeight<br>      &#125;))<br><br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setData</span>(&#123;<br>        visibleData,<br>        startIndex,<br>        endIndex,<br>        scrollTop<br>      &#125;)<br>    &#125;,<br><br>    <span class="hljs-title function_">onScroll</span>(<span class="hljs-params">e</span>) &#123;<br>      <span class="hljs-keyword">const</span> scrollTop = e.<span class="hljs-property">detail</span>.<span class="hljs-property">scrollTop</span><br>      <span class="hljs-comment">// 节流处理</span><br>      <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">scrollTimer</span>) <span class="hljs-keyword">return</span><br>      <br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">scrollTimer</span> = <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> &#123;<br>        <span class="hljs-variable language_">this</span>.<span class="hljs-property">scrollTimer</span> = <span class="hljs-literal">null</span><br>        <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">updateVisibleData</span>(scrollTop)<br>      &#125;, <span class="hljs-number">16</span>) <span class="hljs-comment">// 约 60fps</span><br>    &#125;<br>  &#125;<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- components/virtual-list/virtual-list.wxml --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">scroll-view</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;virtual-scroll&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">scroll-y</span></span><br><span class="hljs-tag">  <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;height: 100vh;&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">bindscroll</span>=<span class="hljs-string">&quot;onScroll&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">scroll-top</span>=<span class="hljs-string">&quot;&#123;&#123;scrollTop&#125;&#125;&quot;</span></span><br><span class="hljs-tag">&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;list-container&quot;</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;height: &#123;&#123;listHeight&#125;&#125;px;&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">view</span> </span><br><span class="hljs-tag">      <span class="hljs-attr">wx:for</span>=<span class="hljs-string">&quot;&#123;&#123;visibleData&#125;&#125;&quot;</span> </span><br><span class="hljs-tag">      <span class="hljs-attr">wx:key</span>=<span class="hljs-string">&quot;_index&quot;</span></span><br><span class="hljs-tag">      <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;list-item&quot;</span></span><br><span class="hljs-tag">      <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;transform: translateY(&#123;&#123;item._top&#125;&#125;px); height: &#123;&#123;itemHeight&#125;&#125;px;&quot;</span></span><br><span class="hljs-tag">    &gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">slot</span> <span class="hljs-attr">item</span>=<span class="hljs-string">&quot;&#123;&#123;item&#125;&#125;&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">slot</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">scroll-view</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-comment">/* components/virtual-list/virtual-list.wxss */</span><br><span class="hljs-selector-class">.virtual-scroll</span> &#123;<br>  <span class="hljs-attribute">position</span>: relative;<br>&#125;<br><br><span class="hljs-selector-class">.list-container</span> &#123;<br>  <span class="hljs-attribute">position</span>: relative;<br>&#125;<br><br><span class="hljs-selector-class">.list-item</span> &#123;<br>  <span class="hljs-attribute">position</span>: absolute;<br>  <span class="hljs-attribute">left</span>: <span class="hljs-number">0</span>;<br>  <span class="hljs-attribute">right</span>: <span class="hljs-number">0</span>;<br>  <span class="hljs-attribute">box-sizing</span>: border-box;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>使用自定义组件：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- page.wxml --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">virtual-list</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">listData</span>=<span class="hljs-string">&quot;&#123;&#123;productList&#125;&#125;&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">itemHeight</span>=<span class="hljs-string">&quot;&#123;&#123;120&#125;&#125;&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">bufferSize</span>=<span class="hljs-string">&quot;&#123;&#123;3&#125;&#125;&quot;</span></span><br><span class="hljs-tag">&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;item&quot;</span> <span class="hljs-attr">slot-scope</span>=<span class="hljs-string">&quot;&#123;&#123;item&#125;&#125;&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;product-item&quot;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">image</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;&#123;&#123;item.image&#125;&#125;&quot;</span> <span class="hljs-attr">mode</span>=<span class="hljs-string">&quot;aspectFill&quot;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;info&quot;</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">text</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>&#123;&#123;item.title&#125;&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">text</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">text</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;price&quot;</span>&gt;</span>¥&#123;&#123;item.price&#125;&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">text</span>&gt;</span><br>      <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">virtual-list</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="方案三：分页加载-触底加载"><a href="#方案三：分页加载-触底加载" class="headerlink" title="方案三：分页加载 + 触底加载"></a>方案三：分页加载 + 触底加载</h3><p>对于数据量不是特别大的场景：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-title class_">Page</span>(&#123;<br>  <span class="hljs-attr">data</span>: &#123;<br>    <span class="hljs-attr">list</span>: [],<br>    <span class="hljs-attr">page</span>: <span class="hljs-number">1</span>,<br>    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">20</span>,<br>    <span class="hljs-attr">hasMore</span>: <span class="hljs-literal">true</span>,<br>    <span class="hljs-attr">loading</span>: <span class="hljs-literal">false</span><br>  &#125;,<br><br>  <span class="hljs-title function_">onLoad</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">loadData</span>()<br>  &#125;,<br><br>  <span class="hljs-keyword">async</span> <span class="hljs-title function_">loadData</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">loading</span> || !<span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">hasMore</span>) <span class="hljs-keyword">return</span><br><br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setData</span>(&#123; <span class="hljs-attr">loading</span>: <span class="hljs-literal">true</span> &#125;)<br><br>    <span class="hljs-keyword">try</span> &#123;<br>      <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> wx.<span class="hljs-title function_">request</span>(&#123;<br>        <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;https://api.example.com/products&#x27;</span>,<br>        <span class="hljs-attr">data</span>: &#123;<br>          <span class="hljs-attr">page</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">page</span>,<br>          <span class="hljs-attr">pageSize</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">pageSize</span><br>        &#125;<br>      &#125;)<br><br>      <span class="hljs-keyword">const</span> newList = res.<span class="hljs-property">data</span>.<span class="hljs-property">list</span><br>      <br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setData</span>(&#123;<br>        <span class="hljs-attr">list</span>: [...<span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">list</span>, ...newList],<br>        <span class="hljs-attr">page</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">page</span> + <span class="hljs-number">1</span>,<br>        <span class="hljs-attr">hasMore</span>: newList.<span class="hljs-property">length</span> === <span class="hljs-variable language_">this</span>.<span class="hljs-property">data</span>.<span class="hljs-property">pageSize</span>,<br>        <span class="hljs-attr">loading</span>: <span class="hljs-literal">false</span><br>      &#125;)<br>    &#125; <span class="hljs-keyword">catch</span> (error) &#123;<br>      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;加载失败:&#x27;</span>, error)<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setData</span>(&#123; <span class="hljs-attr">loading</span>: <span class="hljs-literal">false</span> &#125;)<br>    &#125;<br>  &#125;,<br><br>  <span class="hljs-title function_">onReachBottom</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">loadData</span>()<br>  &#125;,<br><br>  <span class="hljs-comment">// 下拉刷新</span><br>  <span class="hljs-keyword">async</span> <span class="hljs-title function_">onPullDownRefresh</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setData</span>(&#123;<br>      <span class="hljs-attr">list</span>: [],<br>      <span class="hljs-attr">page</span>: <span class="hljs-number">1</span>,<br>      <span class="hljs-attr">hasMore</span>: <span class="hljs-literal">true</span><br>    &#125;)<br>    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">loadData</span>()<br>    wx.<span class="hljs-title function_">stopPullDownRefresh</span>()<br>  &#125;<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- page.wxml --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">scroll-view</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">scroll-y</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;height: 100vh;&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">bindscrolltolower</span>=<span class="hljs-string">&quot;onReachBottom&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">refresher-enabled</span></span><br><span class="hljs-tag">  <span class="hljs-attr">bindrefresherrefresh</span>=<span class="hljs-string">&quot;onPullDownRefresh&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">refresher-triggered</span>=<span class="hljs-string">&quot;&#123;&#123;loading&#125;&#125;&quot;</span></span><br><span class="hljs-tag">&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">wx:for</span>=<span class="hljs-string">&quot;&#123;&#123;list&#125;&#125;&quot;</span> <span class="hljs-attr">wx:key</span>=<span class="hljs-string">&quot;id&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;item&quot;</span>&gt;</span><br>    <span class="hljs-comment">&lt;!-- 列表项内容 --&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>  <br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;loading-status&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">text</span> <span class="hljs-attr">wx:if</span>=<span class="hljs-string">&quot;&#123;&#123;loading&#125;&#125;&quot;</span>&gt;</span>加载中...<span class="hljs-tag">&lt;/<span class="hljs-name">text</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">text</span> <span class="hljs-attr">wx:elif</span>=<span class="hljs-string">&quot;&#123;&#123;!hasMore&#125;&#125;&quot;</span>&gt;</span>没有更多了<span class="hljs-tag">&lt;/<span class="hljs-name">text</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">scroll-view</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h2><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>渲染节点数</th>
+<th>内存占用</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>普通 scroll-view</td>
+<td>全部</td>
+<td>高</td>
+<td>少量数据</td>
+</tr>
+<tr>
+<td>recycle-view</td>
+<td>视口内</td>
+<td>低</td>
+<td>大量数据</td>
+</tr>
+<tr>
+<td>自定义虚拟列表</td>
+<td>视口+缓冲</td>
+<td>低</td>
+<td>复杂需求</td>
+</tr>
+<tr>
+<td>分页加载</td>
+<td>当前页</td>
+<td>中</td>
+<td>中等数据量</td>
+</tr>
+</tbody></table>
+<h2 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h2><ol>
+<li><strong>图片懒加载</strong></li>
+</ol>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">image</span> </span><br><span class="hljs-tag">  <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;&#123;&#123;item.show ? item.image : placeholder&#125;&#125;&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">lazy-load</span>=<span class="hljs-string">&quot;&#123;&#123;true&#125;&#125;&quot;</span></span><br><span class="hljs-tag">  <span class="hljs-attr">bindload</span>=<span class="hljs-string">&quot;onImageLoad&quot;</span></span><br><span class="hljs-tag">/&gt;</span><br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>避免复杂计算</strong></li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 不好的做法：每次滚动都计算</span><br><span class="hljs-title function_">onScroll</span>(<span class="hljs-params">e</span>) &#123;<br>  <span class="hljs-keyword">const</span> complexResult = <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">heavyCalculation</span>()<br>&#125;<br><br><span class="hljs-comment">// 好的做法：使用缓存和节流</span><br><span class="hljs-attr">onScroll</span>: <span class="hljs-title function_">throttle</span>(<span class="hljs-keyword">function</span>(<span class="hljs-params">e</span>) &#123;<br>  <span class="hljs-comment">// 处理滚动</span><br>&#125;, <span class="hljs-number">100</span>)<br></code></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><strong>使用骨架屏优化首屏</strong></li>
+</ol>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">wx:if</span>=<span class="hljs-string">&quot;&#123;&#123;loading&#125;&#125;&quot;</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">wx:for</span>=<span class="hljs-string">&quot;&#123;&#123;5&#125;&#125;&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;skeleton-item&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;skeleton-image&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">view</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;skeleton-text&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">view</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">block</span> <span class="hljs-attr">wx:else</span>&gt;</span><br>  <span class="hljs-comment">&lt;!-- 真实列表 --&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">block</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><strong>及时清理定时器和监听器</strong></li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-title function_">onUnload</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">scrollTimer</span>) &#123;<br>    <span class="hljs-built_in">clearTimeout</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">scrollTimer</span>)<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<p>小程序长列表优化是提升用户体验的关键，根据实际数据量选择合适的方案！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/programming/" class="category-chain-item">programming</a>
+  
+  
+    <span>></span>
+    
+  <a href="/programming/miniprogram/" class="category-chain-item">miniprogram</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" class="print-no-link">#性能优化</a>
+      
+        <a href="/tags/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F/" class="print-no-link">#微信小程序</a>
+      
+        <a href="/tags/%E9%95%BF%E5%88%97%E8%A1%A8/" class="print-no-link">#长列表</a>
+      
+        <a href="/tags/scroll-view/" class="print-no-link">#scroll-view</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>微信小程序长列表性能优化：解决 scroll-view 卡顿问题</div>
+      <div>https://bugchloe.github.io/2026/03/21/miniprogram-scroll-view-optimization/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>BugChloe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/03/21/ai-machine-learning-basics/" title="机器学习入门：从线性回归到神经网络">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">机器学习入门：从线性回归到神经网络</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/03/21/frontend-image-lazy-loading/" title="前端性能优化：图片懒加载的实现与最佳实践">
+                        <span class="hidden-mobile">前端性能优化：图片懒加载的实现与最佳实践</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/10.6.1/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom-mermaid.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
