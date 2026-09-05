@@ -1,0 +1,910 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/ladybug.png">
+  <link rel="icon" href="/img/ladybug.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="BugChloe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="周末到了，你想带孩子出去玩。 手机里摆着四个选项：公园散步、游乐园、电影院、密室逃脱。你希望去户外，但又不想太刺激，最好全家都能参与。 对人来说，这并不难判断。公园和游乐园都在户外，电影院和密室逃脱大多在室内；游乐园比公园刺激，密室逃脱也不一定适合年纪小的孩子。 可如果把这四个名字直接交给计算机，它看到的只是四串不同的文字。 1234公园散步游乐园电影院密室逃脱  计算机没有逛过公园，也没有坐过过">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI 怎么知道公园和游乐园有点像">
+<meta property="og:url" content="https://bugchloe.github.io/2026/09/05/2026-09-05-ai-embedding-vectors/index.html">
+<meta property="og:site_name" content="BugChloe">
+<meta property="og:description" content="周末到了，你想带孩子出去玩。 手机里摆着四个选项：公园散步、游乐园、电影院、密室逃脱。你希望去户外，但又不想太刺激，最好全家都能参与。 对人来说，这并不难判断。公园和游乐园都在户外，电影院和密室逃脱大多在室内；游乐园比公园刺激，密室逃脱也不一定适合年纪小的孩子。 可如果把这四个名字直接交给计算机，它看到的只是四串不同的文字。 1234公园散步游乐园电影院密室逃脱  计算机没有逛过公园，也没有坐过过">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bugchloe.github.io/img/embedding-figure-1.svg">
+<meta property="og:image" content="https://bugchloe.github.io/img/embedding-figure-2.svg">
+<meta property="og:image" content="https://bugchloe.github.io/img/embedding-figure-3.svg">
+<meta property="article:published_time" content="2026-09-05T13:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-05T14:50:47.530Z">
+<meta property="article:author" content="BugChloe">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Embedding">
+<meta property="article:tag" content="向量">
+<meta property="article:tag" content="大模型">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bugchloe.github.io/img/embedding-figure-1.svg">
+  
+  
+  
+  <title>AI 怎么知道公园和游乐园有点像 - BugChloe</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bugchloe.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img src="/img/ladybug.png" srcset="/img/loading.gif" lazyload alt="Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;">
+      <strong>BugChloe</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/life/" target="_self">
+                <i class="iconfont icon-articles"></i>
+                <span>生活</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/english/" target="_self">
+                <i class="iconfont icon-chart"></i>
+                <span>学英语</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-category"></i>
+                <span>AI相关</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/model/" target="_self">
+                    <i class="iconfont icon-articles"></i>
+                    <span>模型</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/tools/" target="_self">
+                    <i class="iconfont icon-tags"></i>
+                    <span>工具</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/ai/best-practices/" target="_self">
+                    <i class="iconfont icon-list"></i>
+                    <span>最佳实践</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-code"></i>
+                <span>编程</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/java/" target="_self">
+                    <i class="iconfont icon-author"></i>
+                    <span>Java</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/python/" target="_self">
+                    <i class="iconfont icon-copy"></i>
+                    <span>Python</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/frontend/" target="_self">
+                    <i class="iconfont icon-clock-fill"></i>
+                    <span>前端</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/programming/miniprogram/" target="_self">
+                    <i class="iconfont icon-eye"></i>
+                    <span>小程序</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/postpage.webp') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="AI 怎么知道公园和游乐园有点像"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-09-05 21:00" pubdate>
+          2026年9月5日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">AI 怎么知道公园和游乐园有点像</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>周末到了，你想带孩子出去玩。</p>
+<p>手机里摆着四个选项：公园散步、游乐园、电影院、密室逃脱。你希望去户外，但又不想太刺激，最好全家都能参与。</p>
+<p>对人来说，这并不难判断。公园和游乐园都在户外，电影院和密室逃脱大多在室内；游乐园比公园刺激，密室逃脱也不一定适合年纪小的孩子。</p>
+<p>可如果把这四个名字直接交给计算机，它看到的只是四串不同的文字。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">公园散步<br>游乐园<br>电影院<br>密室逃脱<br></code></pre></td></tr></table></figure>
+
+<p>计算机没有逛过公园，也没有坐过过山车。它怎么知道哪些活动比较像，又该把哪一个推荐给你？</p>
+<h2 id="先把所有活动排在一条线上"><a href="#先把所有活动排在一条线上" class="headerlink" title="先把所有活动排在一条线上"></a>先把所有活动排在一条线上</h2><p>最容易想到的办法，是先找一个人人都能理解的特点。</p>
+<p>比如”户外程度”，从 0 到 1 打分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">电影院：0.1<br>密室逃脱：0.15<br>游乐园：0.8<br>公园散步：0.9<br></code></pre></td></tr></table></figure>
+
+<p>四项活动就这样被放到了一条线上。</p>
+<p><img src="/img/embedding-figure-1.svg" srcset="/img/loading.gif" lazyload alt="只用一个维度表示活动"></p>
+<p>现在，原来模糊的”像不像”第一次可以计算了：两个数字越接近，说明它们的户外程度越接近。</p>
+<p>但这条线很快就闹出了笑话。</p>
+<p>公园散步和游乐园挨得很近，可一个安静舒缓，一个可能充满过山车和尖叫。电影院和密室逃脱也靠在一起，但一个坐着看故事，一个要解谜、奔跑，甚至可能被吓一跳。</p>
+<p>问题不在数字不准确，而在于我们只看了一个方面。</p>
+<p>既然”户外程度”分不开它们，不妨再加一个”刺激程度”。</p>
+<h2 id="一条线不够，那就再增加一个方向"><a href="#一条线不够，那就再增加一个方向" class="headerlink" title="一条线不够，那就再增加一个方向"></a>一条线不够，那就再增加一个方向</h2><p>有了两个特点，每项活动需要两个数字：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">公园散步 = [户外 0.9，刺激 0.2]<br>游乐园   = [户外 0.8，刺激 0.9]<br>电影院   = [户外 0.1，刺激 0.2]<br>密室逃脱 = [户外 0.1，刺激 0.8]<br></code></pre></td></tr></table></figure>
+
+<p>第一个数字决定它在图上的左右位置，第二个数字决定上下位置。</p>
+<p><img src="/img/embedding-figure-2.svg" srcset="/img/loading.gif" lazyload alt="增加刺激程度后的二维活动地图"></p>
+<p>原来挤在一起的活动被拉开了：</p>
+<ul>
+<li>公园和游乐园都偏户外，但刺激程度不同；</li>
+<li>电影院和密室都偏室内，但体验也不再混为一谈。</li>
+</ul>
+<p>我们刚刚做的事，在数学上有一个名字：把每项活动表示成了一个<strong>向量</strong>。</p>
+<p>向量并不神秘，它就是一组有顺序的数字。数字的个数叫作<strong>维度</strong>。</p>
+<p>在这个例子中：</p>
+<ul>
+<li>“户外程度”是一个维度；</li>
+<li>“刺激程度”是一个维度；</li>
+<li>每项活动都是二维空间中的一个点。</li>
+</ul>
+<p>如果还想区分”是否适合亲子参与”，可以再加第三个维度：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">[户外程度，刺激程度，亲子友好程度]<br></code></pre></td></tr></table></figure>
+
+<p>三个维度还勉强能想象。增加到四维、十维甚至几百维以后，人脑已经画不出来，但计算机仍然可以照常存储和计算。</p>
+<p>这就是向量真正有用的地方：</p>
+<blockquote>
+<p>它把一个现实对象变成了一组可以计算的数字，同时保留了我们关心的某些特点。</p>
+</blockquote>
+<h2 id="有了坐标，推荐也可以变成计算"><a href="#有了坐标，推荐也可以变成计算" class="headerlink" title="有了坐标，推荐也可以变成计算"></a>有了坐标，推荐也可以变成计算</h2><p>假设这次推荐主要看两点：户外和亲子友好，各占一半；刺激程度暂时不加分。</p>
+<p>可以把这次需求写成一组权重：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">推荐权重 = [户外 0.5，刺激 0，亲子友好 0.5]<br></code></pre></td></tr></table></figure>
+
+<p>再假设公园散步的向量是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">公园散步 = [0.9，0.2，0.9]<br></code></pre></td></tr></table></figure>
+
+<p>把对应位置分别相乘，再把结果相加：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">0.9×0.5 + 0.2×0 + 0.9×0.5 = 0.9<br></code></pre></td></tr></table></figure>
+
+<p>公园散步得到 0.9 分。</p>
+<p>这种”对应位置相乘，再全部相加”的运算，就是<strong>点积</strong>。</p>
+<p>我们不必先背点积公式。只要记住，在这个推荐场景里，它做了一件很直观的事：</p>
+<blockquote>
+<p>按照这次需求的重要程度，把一项活动的多个特点合成一个总分。</p>
+</blockquote>
+<p>购物时，”价格向量”和”数量向量”做点积，可以得到总价；招聘时，”能力向量”和”岗位权重”做点积，可以得到匹配分；在推荐系统里，活动向量与偏好权重做点积，可以得到推荐分。</p>
+<p>同一种数学运算，在不同问题中有不同解释，但结构完全相同。</p>
+<h2 id="真正困难的不是计算，而是这些数字从哪里来"><a href="#真正困难的不是计算，而是这些数字从哪里来" class="headerlink" title="真正困难的不是计算，而是这些数字从哪里来"></a>真正困难的不是计算，而是这些数字从哪里来</h2><p>到目前为止，户外程度、刺激程度和亲子友好程度，都是我们人工规定的。</p>
+<p>如果只需要整理几十个周末活动，这样做或许可行。但如果要描述几十万件商品、几百万张图片，或者一种语言里的所有词语呢？</p>
+<p>仅仅一个”苹果”，就可能包含很多方面：</p>
+<ul>
+<li>它是一种水果；</li>
+<li>可以食用；</li>
+<li>有甜味和酸味；</li>
+<li>可能是红色或绿色；</li>
+<li>也可能指一家科技公司；</li>
+<li>在不同句子里还会呈现不同含义。</li>
+</ul>
+<p>我们不可能先列出几千个特征，再让人给每个词逐项打分。</p>
+<p>更现实的办法是：告诉模型要完成什么任务，让它在训练中自己寻找一套有用的数字表示。</p>
+<p>这套由模型学习出来的向量表示，就是 <strong>Embedding，中文通常叫”嵌入”</strong>。</p>
+<p>前面，我们用”户外程度、刺激程度、亲子友好程度”三个数字给每项活动安排了一个位置。Embedding 做的也是类似的事：用一组数字把对象放进一个空间，让对象之间的关系可以被计算。</p>
+<p>两者最重要的区别在于：活动示例中的特征和分数是我们手工填写的；真实 Embedding 的数字则主要由模型根据训练数据和任务学习出来。</p>
+<h2 id="模型没有字典，它从词语出现的位置学习关系"><a href="#模型没有字典，它从词语出现的位置学习关系" class="headerlink" title="模型没有字典，它从词语出现的位置学习关系"></a>模型没有字典，它从词语出现的位置学习关系</h2><p>模型怎样学习词语的向量？</p>
+<p>可以先观察下面几句话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">周末去公园散步。<br>孩子们在花园里奔跑。<br>大家坐在草坪上野餐。<br></code></pre></td></tr></table></figure>
+
+<p>“公园””花园”和”草坪”并不是同一个词，但它们经常出现在相近的上下文中：散步、植物、户外、休息、孩子。</p>
+<p>再看另一组：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">孩子想去游乐园。<br>过山车非常刺激。<br>旋转木马适合小朋友。<br></code></pre></td></tr></table></figure>
+
+<p>“游乐园””过山车”和”旋转木马”又形成了另一组上下文关系。</p>
+<p>如果训练任务不断要求模型根据周围内容预测词语，或者根据词语预测周围内容，为了减少错误，经常出现在相似上下文中的词就可能逐渐形成相近的向量关系。</p>
+<p><img src="/img/embedding-figure-3.svg" srcset="/img/loading.gif" lazyload alt="模型学习出的词语空间示意"></p>
+<p>这张图只是把高维空间压到二维后的示意。真实模型可能用数百甚至更多数字表示一个词，我们很难给每个维度写上清晰标签。</p>
+<p>不能简单理解成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">第 1 维 = 户外<br>第 2 维 = 快乐<br>第 3 维 = 儿童<br></code></pre></td></tr></table></figure>
+
+<p>在模型学习出来的 Embedding 中，一个概念可能分散在许多维度里，一个维度也可能参与表达多种关系。单个数字通常说不清楚，信息更多体现在整个向量，以及它与其他向量的相对位置中。</p>
+<h2 id="“距离近”并不是一句永远正确的话"><a href="#“距离近”并不是一句永远正确的话" class="headerlink" title="“距离近”并不是一句永远正确的话"></a>“距离近”并不是一句永远正确的话</h2><p>有了向量，就可以计算两个对象之间的距离，也可以比较它们的方向。</p>
+<p>欧氏距离关注两个点相隔多远；余弦相似度更关注两个向量的方向是否一致。不同任务会选择不同的比较方法。</p>
+<p>但无论采用哪种方法，都要补上一句限定：</p>
+<blockquote>
+<p>只有当向量的构造方式本身有意义时，向量之间的距离才可能有意义。</p>
+</blockquote>
+<p>如果”苹果”等于编号 100，”香蕉”等于编号 5，计算 100 和 5 的距离没有语义价值。token ID 只是用来找到对象的编号，不是对象的意义表示。</p>
+<p>而且，Embedding 学到的”相似”会随着任务改变。</p>
+<p>在亲子活动推荐中，公园和游乐园可能因为都适合家庭出行而靠近；在刺激程度模型中，游乐园可能反而更接近密室逃脱。Google 的机器学习课程也特别强调：不同任务会学习出不同的嵌入空间。</p>
+<p>所以，Embedding 不是发现了一张唯一正确的”世界意义地图”。它更像是：</p>
+<blockquote>
+<p>模型为了完成某个任务，学习出的一种观察和排列事物的方式。</p>
+</blockquote>
+<h2 id="这和大语言模型有什么关系？"><a href="#这和大语言模型有什么关系？" class="headerlink" title="这和大语言模型有什么关系？"></a>这和大语言模型有什么关系？</h2><p>一句话进入大语言模型后，会先被切成 token。每个 token 有自己的 ID，模型再通过这个 ID 找到对应的初始 Embedding。</p>
+<p>可以这样区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">token ID：它是哪一个<br>Embedding：模型怎样用一组数字表示它<br></code></pre></td></tr></table></figure>
+
+<p>这只是语言进入模型的第一步。</p>
+<p>Embedding 解决了”怎样给词一个初始坐标”，却没有解决”同一个词在不同句子中为什么会有不同含义”。</p>
+<p>下一篇，我们就从”我喜欢吃苹果”和”我购买了苹果手机”中的两个”苹果”出发，看看模型怎样利用上下文改变一个词的表示。</p>
+<p>这一篇只需要留下一个清晰印象：</p>
+<blockquote>
+<p>AI 不能直接计算”公园””苹果”或”快乐”的意义。它先把对象表示成向量，让原本模糊的特点、关系和相似程度进入一个可以计算的空间。Embedding，就是模型从数据和任务中学习出来的这种向量表示。</p>
+</blockquote>
+<p>下一次再看到一串看似没有含义的小数时，也许可以把它想成地图坐标：单独一个数字很难说明什么，但许多对象被放进同一个空间后，它们之间的远近、方向和排列，开始透露出模型眼中的关系。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.google.com/machine-learning/crash-course/embeddings/embedding-space?hl=zh-cn">Google Machine Learning Crash Course：嵌入空间和静态嵌入</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.google.com/machine-learning/crash-course/embeddings">Google Machine Learning Crash Course：Embeddings</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.d2l.ai/chapter_preliminaries/linear-algebra.html">《动手学深度学习》：线性代数</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.tensorflow.org/text/guide/word_embeddings">TensorFlow：Word embeddings</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/ai/" class="category-chain-item">ai</a>
+  
+  
+    <span>></span>
+    
+  <a href="/ai/popular-science/" class="category-chain-item">popular-science</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/AI/" class="print-no-link">#AI</a>
+      
+        <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="print-no-link">#大模型</a>
+      
+        <a href="/tags/Embedding/" class="print-no-link">#Embedding</a>
+      
+        <a href="/tags/%E5%90%91%E9%87%8F/" class="print-no-link">#向量</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>AI 怎么知道公园和游乐园有点像</div>
+      <div>https://bugchloe.github.io/2026/09/05/2026-09-05-ai-embedding-vectors/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>BugChloe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年9月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/14/2026-06-14-ai-agent-architecture/" title="AI Agent 它到底是怎么做到可以干活的">
+                        <span class="hidden-mobile">AI Agent 它到底是怎么做到可以干活的</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/10.6.1/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/custom-mermaid.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

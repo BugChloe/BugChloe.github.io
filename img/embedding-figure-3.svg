@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#f8fafc"/>
+  <text x="600" y="66" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="34" font-weight="700" fill="#172033">模型学到的“词语地图”</text>
+  <text x="600" y="108" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#667085">相似上下文中的词，可能在向量空间里形成相近位置</text>
+  <rect x="100" y="145" width="1000" height="500" rx="26" fill="#ffffff" stroke="#d0d5dd" stroke-width="2"/>
+
+  <ellipse cx="320" cy="375" rx="175" ry="160" fill="#dcfae6" opacity="0.65"/>
+  <ellipse cx="625" cy="300" rx="165" ry="125" fill="#fef0c7" opacity="0.7"/>
+  <ellipse cx="855" cy="480" rx="170" ry="125" fill="#ede9fe" opacity="0.7"/>
+
+  <g font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="24" font-weight="600">
+    <circle cx="270" cy="330" r="10" fill="#039855"/><text x="290" y="338" fill="#027a48">公园</text>
+    <circle cx="350" cy="405" r="10" fill="#039855"/><text x="370" y="413" fill="#027a48">花园</text>
+    <circle cx="245" cy="455" r="10" fill="#039855"/><text x="265" y="463" fill="#027a48">草坪</text>
+
+    <circle cx="570" cy="265" r="10" fill="#f79009"/><text x="590" y="273" fill="#b54708">游乐园</text>
+    <circle cx="660" cy="335" r="10" fill="#f79009"/><text x="680" y="343" fill="#b54708">过山车</text>
+    <circle cx="610" cy="215" r="10" fill="#f79009"/><text x="630" y="223" fill="#b54708">旋转木马</text>
+
+    <circle cx="800" cy="445" r="10" fill="#7f56d9"/><text x="820" y="453" fill="#5b21b6">电影</text>
+    <circle cx="895" cy="500" r="10" fill="#7f56d9"/><text x="915" y="508" fill="#5b21b6">影院</text>
+    <circle cx="810" cy="545" r="10" fill="#7f56d9"/><text x="830" y="553" fill="#5b21b6">观影</text>
+  </g>
+
+  <text x="600" y="686" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="21" fill="#475467">二维图只是便于理解的投影；真实 Embedding 往往有数百或更多维</text>
+  <text x="600" y="720" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="19" fill="#667085">单个维度通常无法直接解释，关系体现在整个向量及其相对位置中</text>
+</svg>

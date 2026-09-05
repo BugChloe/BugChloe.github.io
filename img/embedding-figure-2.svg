@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#f8fafc"/>
+  <text x="600" y="65" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="34" font-weight="700" fill="#172033">再加一个特征：刺激程度</text>
+  <text x="600" y="106" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#667085">每项活动现在由两个数字表示，成为平面上的一个点</text>
+  <line x1="160" y1="650" x2="1080" y2="650" stroke="#344054" stroke-width="4"/>
+  <polygon points="1080,650 1058,638 1058,662" fill="#344054"/>
+  <line x1="160" y1="650" x2="160" y2="145" stroke="#344054" stroke-width="4"/>
+  <polygon points="160,145 148,167 172,167" fill="#344054"/>
+  <text x="1060" y="704" text-anchor="end" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="22" fill="#667085">更户外 →</text>
+  <text x="82" y="180" transform="rotate(-90 82 180)" text-anchor="end" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="22" fill="#667085">更刺激 →</text>
+  <g stroke="#d0d5dd" stroke-width="1">
+    <line x1="160" y1="525" x2="1060" y2="525"/><line x1="160" y1="400" x2="1060" y2="400"/>
+    <line x1="160" y1="275" x2="1060" y2="275"/><line x1="385" y1="150" x2="385" y2="650"/>
+    <line x1="610" y1="150" x2="610" y2="650"/><line x1="835" y1="150" x2="835" y2="650"/>
+  </g>
+  <g font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif">
+    <circle cx="250" cy="555" r="20" fill="#7f56d9"/>
+    <rect x="185" y="490" width="130" height="52" rx="16" fill="#ede9fe"/>
+    <text x="250" y="524" text-anchor="middle" font-size="22" font-weight="600" fill="#5b21b6">电影院</text>
+
+    <circle cx="275" cy="245" r="20" fill="#f79009"/>
+    <rect x="200" y="175" width="150" height="52" rx="16" fill="#fef0c7"/>
+    <text x="275" y="209" text-anchor="middle" font-size="22" font-weight="600" fill="#b54708">密室逃脱</text>
+
+    <circle cx="885" cy="210" r="20" fill="#e31b54"/>
+    <rect x="810" y="140" width="150" height="52" rx="16" fill="#ffe4e8"/>
+    <text x="885" y="174" text-anchor="middle" font-size="22" font-weight="600" fill="#c01048">游乐园</text>
+
+    <circle cx="970" cy="535" r="20" fill="#039855"/>
+    <rect x="895" y="555" width="150" height="52" rx="16" fill="#dcfae6"/>
+    <text x="970" y="589" text-anchor="middle" font-size="22" font-weight="600" fill="#027a48">公园散步</text>
+  </g>
+  <rect x="280" y="684" width="640" height="48" rx="14" fill="#eef4ff" stroke="#84adff" stroke-width="2"/>
+  <text x="600" y="716" text-anchor="middle" font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#1849a9">增加一维后，原来挤在一起的活动被拉开了</text>
+</svg>
